@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+data/interim/*.npy
+data/interim/*.npz
+models/
+logs/
+emotion-model/outputs/
+emotion-model/kaggle-output/
+
+# Keep generated reports/submissions local unless explicitly selected.
+reports/*.csv
+submissions/*.csv

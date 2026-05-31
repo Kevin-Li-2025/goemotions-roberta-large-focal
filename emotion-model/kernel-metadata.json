@@ -1,0 +1,22 @@
+{
+  "id": "kevin250304/goemotions-deberta-v3-large",
+  "title": "GoEmotions DeBERTa v3 Large",
+  "code_file": "train_goemotions.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": true,
+  "machine_shape": "NvidiaTeslaT4",
+  "keywords": [
+    "goemotions",
+    "emotion-classification",
+    "deberta-v3",
+    "multi-label"
+  ],
+  "dataset_sources": [],
+  "kernel_sources": [],
+  "competition_sources": [],
+  "model_sources": []
+}
