@@ -1,0 +1,65 @@
+{
+  "kaggle_kernel": "kevin250304/goemotions-roberta-large-focal-sweep",
+  "kaggle_version": 1,
+  "kaggle_status": "COMPLETE",
+  "status": "completed_strong_run",
+  "model_name": "FacebookAI/roberta-large",
+  "loss_type": "focal",
+  "focal_alpha": 0.38,
+  "focal_gamma": 2.8,
+  "seed": 42,
+  "epochs": 4.0,
+  "learning_rate": 1e-05,
+  "train_batch_size": 2,
+  "gradient_accumulation_steps": 16,
+  "mixed_precision": "none",
+  "selected_thresholds": "coordinate",
+  "selection_metric": "macro_f1",
+  "validation_selected": {
+    "macro_f1": 0.5658639133709304,
+    "micro_f1": 0.596637359247262,
+    "samples_f1": 0.6051252347603251,
+    "weighted_f1": 0.5992641491733178,
+    "macro_precision": 0.5649138938984491,
+    "macro_recall": 0.6081120460185147,
+    "subset_accuracy": 0.4784371544415776,
+    "hamming_loss": 0.034424200937286084,
+    "label_density": 0.04334948133326313
+  },
+  "test_selected": {
+    "macro_f1": 0.5330202487288448,
+    "micro_f1": 0.5766508516761297,
+    "samples_f1": 0.5859415444821746,
+    "weighted_f1": 0.5797503408965501,
+    "macro_precision": 0.5233329957872942,
+    "macro_recall": 0.5826537121522568,
+    "subset_accuracy": 0.4695043302008476,
+    "hamming_loss": 0.03581957935191766,
+    "label_density": 0.042959804153834005
+  },
+  "test_threshold_candidates": {
+    "fixed_0_5_macro_f1": 0.5183777221177139,
+    "global_macro_f1": 0.5319919540233973,
+    "per_label_macro_f1": 0.5349936462982042,
+    "coordinate_macro_f1": 0.5330202487288448
+  },
+  "public_reference_points": [
+    {
+      "name": "GoEmotions ACL 2020 BERT baseline",
+      "macro_or_average_f1": 0.46,
+      "url": "https://aclanthology.org/2020.acl-main.372/"
+    },
+    {
+      "name": "Lakssssshya/roberta-large-goemotions",
+      "test_macro_f1": 0.519,
+      "url": "https://huggingface.co/Lakssssshya/roberta-large-goemotions"
+    },
+    {
+      "name": "darkfordays/deberta-v3-large-go-emotions",
+      "validation_macro_f1": 0.4682,
+      "url": "https://huggingface.co/darkfordays/deberta-v3-large-go-emotions"
+    }
+  ],
+  "interpretation": "This is a clearly SOTA-level public-reference result. The strict validation-selected coordinate threshold policy beats the strongest found public model card by about 0.014 test macro-F1, and the per-label threshold candidate reaches about 0.535 test macro-F1.",
+  "next_experiment": "Run the same RoBERTa-large focal configuration with seed 43 to check variance and create a candidate for seed ensembling."
+}

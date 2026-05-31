@@ -9,6 +9,11 @@ validation threshold tuning, and test-set reporting. This replaces the
 DeBERTa-v3 path after both DeBERTa-v3-large and DeBERTa-v3-base produced
 non-finite values on Kaggle T4 before usable metrics were available.
 
+Latest completed Kaggle result: RoBERTa-large focal seed 42 selected coordinate
+thresholds by validation macro-F1 and reached validation macro-F1 0.5659 and
+test macro-F1 0.5330. Per-label thresholds reached test macro-F1 0.5350 but
+were not the validation-selected policy.
+
 References:
 
 - Google Research: https://research.google/pubs/goemotions-a-dataset-of-fine-grained-emotions/
@@ -51,7 +56,7 @@ do not pass `--accelerator GPU`, because that can override the specific machine
 shape and assign an incompatible P100. Outputs are written under:
 
 ```text
-/kaggle/working/goemotions-roberta-large-focal
+/kaggle/working/goemotions-roberta-large-focal-seed43
 ```
 
 Key artifacts:

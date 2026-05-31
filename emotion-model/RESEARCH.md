@@ -73,6 +73,14 @@ the hard part of this benchmark. Track `micro_f1`, `samples_f1`,
   guarded Kaggle run stopped with non-finite logits on Tesla T4, so the active
   path is now RoBERTa-large rather than more DeBERTa sweeps.
 
+## Strong Runs
+
+- 2026-05-31 RoBERTa-large focal seed 42: completed cleanly. Coordinate
+  thresholds selected by validation macro-F1 reached validation macro-F1
+  0.565864 and test macro-F1 0.533020. This exceeds the strongest public
+  model-card reference found during this iteration, which reports test macro-F1
+  0.519 for a RoBERTa-large focal/per-label-threshold model.
+
 ## Commit And Data Policy
 
 Commit code, configs, metrics summaries, and small research notes. Do not commit
