@@ -22,6 +22,17 @@ The strict validation-selected threshold policy is the headline result. A
 per-label threshold candidate reached test macro-F1 0.5350, but it was not the
 validation-selected policy.
 
+Validation threshold selection:
+
+| Threshold Policy | Validation Macro-F1 | Test Macro-F1 |
+| --- | ---: | ---: |
+| Fixed 0.5 | 0.5147 | 0.5184 |
+| Global validation-tuned threshold | 0.5383 | 0.5320 |
+| Per-label thresholds | 0.5634 | 0.5350 |
+| Coordinate thresholds | 0.5659 | 0.5330 |
+
+The selected policy is based on validation macro-F1, not test-set tuning.
+
 ## Start Here
 
 - [Project README](emotion-model/README.md): setup, inference, training, and reproducibility.

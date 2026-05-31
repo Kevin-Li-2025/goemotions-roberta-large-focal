@@ -55,6 +55,28 @@
     "per_label_macro_f1": 0.5349936462982042,
     "coordinate_macro_f1": 0.5330202487288448
   },
+  "validation_threshold_candidates": {
+    "fixed_0_5_macro_f1": 0.5146504031880217,
+    "fixed_0_5_micro_f1": 0.6021247317623939,
+    "fixed_0_5_samples_f1": 0.6085742719886999,
+    "global_macro_f1": 0.538267346575113,
+    "global_micro_f1": 0.5676317954869918,
+    "global_samples_f1": 0.5782497329087053,
+    "per_label_macro_f1": 0.563440946351037,
+    "per_label_micro_f1": 0.5925133689839572,
+    "per_label_samples_f1": 0.6007274721202619,
+    "coordinate_macro_f1": 0.5658639133709304,
+    "coordinate_micro_f1": 0.596637359247262,
+    "coordinate_samples_f1": 0.6051252347603251
+  },
+  "robustness_followup": {
+    "seed_sweep_seeds": [
+      43,
+      44
+    ],
+    "bootstrap_samples_per_seed": 1000,
+    "status": "prepared"
+  },
   "public_reference_points": [
     {
       "name": "GoEmotions ACL 2020 BERT baseline",

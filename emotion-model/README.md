@@ -32,14 +32,23 @@ GoEmotions.
 | Validation | 0.5659 | 0.5966 | 0.6051 | 0.4784 |
 | Test | 0.5330 | 0.5767 | 0.5859 | 0.4695 |
 
+Threshold selection on the validation split:
+
+| Threshold Policy | Validation Macro-F1 | Validation Micro-F1 | Validation Samples-F1 |
+| --- | ---: | ---: | ---: |
+| Fixed 0.5 | 0.5147 | 0.6021 | 0.6086 |
+| Global validation-tuned threshold | 0.5383 | 0.5676 | 0.5783 |
+| Per-label thresholds | 0.5634 | 0.5925 | 0.6007 |
+| Coordinate thresholds | 0.5659 | 0.5966 | 0.6051 |
+
 Threshold comparison on the test split:
 
-| Threshold Policy | Test Macro-F1 |
-| --- | ---: |
-| Fixed 0.5 | 0.5184 |
-| Global validation-tuned threshold | 0.5320 |
-| Validation-selected coordinate thresholds | 0.5330 |
-| Per-label thresholds | 0.5350 |
+| Threshold Policy | Test Macro-F1 | Test Micro-F1 | Test Samples-F1 |
+| --- | ---: | ---: | ---: |
+| Fixed 0.5 | 0.5184 | 0.6027 | 0.6082 |
+| Global validation-tuned threshold | 0.5320 | 0.5630 | 0.5737 |
+| Per-label thresholds | 0.5350 | 0.5759 | 0.5852 |
+| Coordinate thresholds | 0.5330 | 0.5767 | 0.5859 |
 
 The per-label threshold candidate reached the highest test macro-F1, but the
 coordinate threshold policy was selected by validation macro-F1 and is the
@@ -133,8 +142,20 @@ Run the release configuration explicitly:
   --focal_gamma 2.8 \
   --threshold_metric macro_f1 \
   --threshold_coordinate_passes 2 \
+  --bootstrap_samples 1000 \
   --mixed_precision none
 ```
+
+Run a seed sweep on Kaggle or another GPU runner:
+
+```bash
+SEED_SWEEP_SEEDS=43,44 BOOTSTRAP_SAMPLES=1000 \
+  .venv/bin/python emotion-model/run_seed_sweep.py
+```
+
+The seed sweep runner writes `seed_sweep_summary.json` and preserves each
+seed's full `metrics.json`, including row-bootstrap confidence intervals for
+macro-F1, micro-F1, and samples-F1.
 
 For Kaggle GPU execution, push the script kernel from the repository root:
 
@@ -185,6 +206,7 @@ permissions only for creating or updating GitHub Releases.
 ```text
 emotion-model/
   train_goemotions.py                         # training, evaluation, threshold tuning
+  run_seed_sweep.py                           # sequential seed sweep runner
   kernel-metadata.json                        # Kaggle script-kernel config
   requirements.txt                            # runtime dependencies
   MODEL_CARD.md                               # Hugging Face model card source

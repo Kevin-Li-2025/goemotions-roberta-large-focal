@@ -7,6 +7,7 @@ on:
     paths:
       - ".github/**"
       - ".gitignore"
+      - "README.md"
       - "CONTRIBUTING.md"
       - "LICENSE"
       - "emotion-model/**"
@@ -16,6 +17,7 @@ on:
     paths:
       - ".github/**"
       - ".gitignore"
+      - "README.md"
       - "CONTRIBUTING.md"
       - "LICENSE"
       - "emotion-model/**"
@@ -105,4 +107,4 @@ jobs:
           python -m pip install -r emotion-model/requirements.txt
 
       - name: Run offline unit smoke tests
-        run: python -m unittest discover -s emotion-model/tests -v
+        run: GOEMOTIONS_SKIP_TRANSFORMERS_IMPORT=1 python -m unittest discover -s emotion-model/tests -v

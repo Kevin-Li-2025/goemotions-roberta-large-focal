@@ -34,16 +34,22 @@ ensure_runtime_deps()
 import numpy as np
 import pandas as pd
 import torch
-from datasets import DatasetDict, load_dataset
 from sklearn.metrics import accuracy_score, f1_score, hamming_loss, precision_score, recall_score
-from transformers import (
-    AutoModelForSequenceClassification,
-    AutoTokenizer,
-    DataCollatorWithPadding,
-    Trainer,
-    TrainingArguments,
-    set_seed,
-)
+
+if os.environ.get("GOEMOTIONS_SKIP_TRANSFORMERS_IMPORT") == "1":
+    class Trainer:  # type: ignore[no-redef]
+        pass
+
+else:
+    from datasets import load_dataset
+    from transformers import (
+        AutoModelForSequenceClassification,
+        AutoTokenizer,
+        DataCollatorWithPadding,
+        Trainer,
+        TrainingArguments,
+        set_seed,
+    )
 
 
 def parse_args() -> argparse.Namespace:
@@ -82,6 +88,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--threshold_step", type=float, default=0.02)
     parser.add_argument("--threshold_coordinate_passes", type=int, default=2)
     parser.add_argument("--threshold_metric", choices=["macro_f1", "micro_f1", "samples_f1"], default="macro_f1")
+    parser.add_argument("--bootstrap_samples", type=int, default=0)
+    parser.add_argument("--bootstrap_confidence", type=float, default=0.95)
+    parser.add_argument("--bootstrap_seed", type=int, default=20260531)
     parser.add_argument("--neutral_exclusive", action="store_true", default=True)
     parser.add_argument("--allow_neutral_with_other_labels", dest="neutral_exclusive", action="store_false")
     parser.add_argument("--force_at_least_one_label", action="store_true", default=True)
@@ -109,7 +118,7 @@ def labels_to_multihot(label_lists: list[list[int]], num_labels: int) -> np.ndar
     return labels
 
 
-def limit_split(ds: DatasetDict, split: str, max_samples: int | None) -> DatasetDict:
+def limit_split(ds: Any, split: str, max_samples: int | None) -> Any:
     if max_samples is None:
         return ds
     n = min(max_samples, len(ds[split]))
@@ -117,7 +126,7 @@ def limit_split(ds: DatasetDict, split: str, max_samples: int | None) -> Dataset
     return ds
 
 
-def prepare_dataset(raw: DatasetDict, tokenizer: AutoTokenizer, num_labels: int, max_length: int) -> DatasetDict:
+def prepare_dataset(raw: Any, tokenizer: Any, num_labels: int, max_length: int) -> Any:
     def encode_batch(batch: dict[str, Any]) -> dict[str, Any]:
         encoded = tokenizer(batch["text"], truncation=True, max_length=max_length)
         encoded["labels"] = labels_to_multihot(batch["labels"], num_labels).tolist()
@@ -127,7 +136,7 @@ def prepare_dataset(raw: DatasetDict, tokenizer: AutoTokenizer, num_labels: int,
     return raw.map(encode_batch, batched=True, remove_columns=remove_columns, desc="Tokenizing GoEmotions")
 
 
-def get_label_names(raw: DatasetDict) -> list[str]:
+def get_label_names(raw: Any) -> list[str]:
     return list(raw["train"].features["labels"].feature.names)
 
 
@@ -182,6 +191,67 @@ def summarize_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float
         "hamming_loss": float(hamming_loss(y_true, y_pred)),
         "label_density": float(y_pred.mean()),
     }
+
+
+def metric_value(y_true: np.ndarray, y_pred: np.ndarray, metric: str) -> float:
+    if metric == "micro_f1":
+        return float(f1_score(y_true, y_pred, average="micro", zero_division=0))
+    if metric == "macro_f1":
+        return float(f1_score(y_true, y_pred, average="macro", zero_division=0))
+    if metric == "weighted_f1":
+        return float(f1_score(y_true, y_pred, average="weighted", zero_division=0))
+    if metric == "samples_f1":
+        return float(f1_score(y_true, y_pred, average="samples", zero_division=0))
+    if metric == "subset_accuracy":
+        return float(accuracy_score(y_true, y_pred))
+    if metric == "hamming_loss":
+        return float(hamming_loss(y_true, y_pred))
+    raise ValueError(f"Unsupported bootstrap metric: {metric}")
+
+
+def deterministic_seed_offset(value: str) -> int:
+    return sum((index + 1) * ord(char) for index, char in enumerate(value))
+
+
+def bootstrap_metric_ci(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    *,
+    metrics: list[str],
+    samples: int,
+    confidence: float,
+    seed: int,
+) -> dict[str, dict[str, float | int]]:
+    if samples <= 0:
+        return {}
+    if not 0.0 < confidence < 1.0:
+        raise ValueError("--bootstrap_confidence must be between 0 and 1")
+
+    rng = np.random.default_rng(seed)
+    n_rows = y_true.shape[0]
+    alpha = 1.0 - confidence
+    lower_q = alpha / 2.0
+    upper_q = 1.0 - lower_q
+    values: dict[str, list[float]] = {metric: [] for metric in metrics}
+
+    for _ in range(samples):
+        sample_indices = rng.integers(0, n_rows, size=n_rows)
+        sample_true = y_true[sample_indices]
+        sample_pred = y_pred[sample_indices]
+        for metric in metrics:
+            values[metric].append(metric_value(sample_true, sample_pred, metric))
+
+    intervals: dict[str, dict[str, float | int]] = {}
+    for metric, metric_values in values.items():
+        arr = np.asarray(metric_values, dtype=np.float64)
+        intervals[metric] = {
+            "confidence": float(confidence),
+            "samples": int(samples),
+            "mean": float(arr.mean()),
+            "lower": float(np.quantile(arr, lower_q)),
+            "upper": float(np.quantile(arr, upper_q)),
+        }
+    return intervals
 
 
 def per_label_metrics(y_true: np.ndarray, y_pred: np.ndarray, label_names: list[str]) -> dict[str, dict[str, float]]:
@@ -521,6 +591,15 @@ def evaluate_split(
     )
     metrics = summarize_metrics(y_true, y_pred)
     metrics["per_label"] = per_label_metrics(y_true, y_pred, label_names)
+    if args.bootstrap_samples > 0:
+        metrics["bootstrap_ci"] = bootstrap_metric_ci(
+            y_true,
+            y_pred,
+            metrics=["macro_f1", "micro_f1", "samples_f1"],
+            samples=args.bootstrap_samples,
+            confidence=args.bootstrap_confidence,
+            seed=args.bootstrap_seed + deterministic_seed_offset(split_name),
+        )
     if args.save_predictions:
         write_predictions(output_dir / f"{split_name}_predictions.csv", raw_split, probs, y_pred, y_true, label_names)
     return metrics
@@ -710,6 +789,9 @@ def main() -> None:
             "seed": args.seed,
             "threshold_coordinate_passes": args.threshold_coordinate_passes,
             "fail_on_nonfinite_loss": args.fail_on_nonfinite_loss,
+            "bootstrap_samples": args.bootstrap_samples,
+            "bootstrap_confidence": args.bootstrap_confidence,
+            "bootstrap_seed": args.bootstrap_seed,
         },
         "threshold_selection": {
             "selected": selected_name,

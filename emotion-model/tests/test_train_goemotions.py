@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import math
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -11,6 +13,7 @@ import torch
 
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "train_goemotions.py"
+os.environ["GOEMOTIONS_SKIP_TRANSFORMERS_IMPORT"] = "1"
 SPEC = importlib.util.spec_from_file_location("train_goemotions", MODULE_PATH)
 assert SPEC is not None and SPEC.loader is not None
 train_goemotions = importlib.util.module_from_spec(SPEC)
@@ -77,6 +80,30 @@ class GoEmotionsTrainingUtilitiesTest(unittest.TestCase):
         self.assertEqual(thresholds.shape, (2,))
         self.assertAlmostEqual(metrics["macro_f1"], 1.0)
 
+    def test_bootstrap_metric_ci_is_deterministic(self) -> None:
+        y_true = np.array([[1, 0], [1, 0], [0, 1], [0, 1]], dtype=np.int32)
+        y_pred = np.array([[1, 0], [1, 0], [0, 1], [1, 0]], dtype=np.int32)
+        first = train_goemotions.bootstrap_metric_ci(
+            y_true,
+            y_pred,
+            metrics=["macro_f1", "micro_f1"],
+            samples=25,
+            confidence=0.90,
+            seed=7,
+        )
+        second = train_goemotions.bootstrap_metric_ci(
+            y_true,
+            y_pred,
+            metrics=["macro_f1", "micro_f1"],
+            samples=25,
+            confidence=0.90,
+            seed=7,
+        )
+        self.assertEqual(first, second)
+        self.assertEqual(first["macro_f1"]["samples"], 25)
+        self.assertEqual(first["macro_f1"]["confidence"], 0.90)
+        self.assertLessEqual(first["macro_f1"]["lower"], first["macro_f1"]["upper"])
+
     def test_loss_functions_are_finite(self) -> None:
         trainer = train_goemotions.WeightedMultilabelTrainer.__new__(
             train_goemotions.WeightedMultilabelTrainer
@@ -104,6 +131,7 @@ class GoEmotionsTrainingUtilitiesTest(unittest.TestCase):
             path = Path(tmp) / "nested" / "payload.json"
             train_goemotions.save_json(path, {"value": np.float32(0.5), "items": np.array([1, 2])})
             text = path.read_text()
+            json.loads(text)
             self.assertIn('"value": 0.5', text)
             self.assertIn('"items"', text)
             self.assertTrue(text.endswith("\n"))
