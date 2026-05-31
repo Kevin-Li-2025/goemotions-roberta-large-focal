@@ -4,8 +4,15 @@ import json
 import os
 import subprocess
 import sys
+import urllib.request
 from pathlib import Path
 from typing import Any
+
+
+DEFAULT_TRAIN_SOURCE_URL = (
+    "https://raw.githubusercontent.com/Kevin-Li-2025/"
+    "goemotions-roberta-large-focal/main/emotion-model/train_goemotions.py"
+)
 
 
 def parse_seeds(value: str) -> list[int]:
@@ -55,11 +62,24 @@ def write_summary(summary_path: Path, rows: list[dict[str, Any]]) -> None:
     )
 
 
+def resolve_training_script() -> Path:
+    local_script = Path(__file__).with_name("train_goemotions.py")
+    if local_script.exists():
+        return local_script
+
+    source_url = os.environ.get("TRAIN_GOEMOTIONS_URL", DEFAULT_TRAIN_SOURCE_URL)
+    target = Path(os.environ.get("TRAIN_GOEMOTIONS_SCRIPT", "/kaggle/working/train_goemotions.py"))
+    target.parent.mkdir(parents=True, exist_ok=True)
+    print(f"Downloading training script from {source_url} to {target}", flush=True)
+    urllib.request.urlretrieve(source_url, target)
+    return target
+
+
 def main() -> None:
     seeds = parse_seeds(os.environ.get("SEED_SWEEP_SEEDS", "43,44"))
     base_output_dir = Path(os.environ.get("SEED_SWEEP_OUTPUT_DIR", "/kaggle/working/goemotions-seed-sweep"))
     bootstrap_samples = os.environ.get("BOOTSTRAP_SAMPLES", "1000")
-    script = Path(__file__).with_name("train_goemotions.py")
+    script = resolve_training_script()
     summary_path = base_output_dir / "seed_sweep_summary.json"
     rows: list[dict[str, Any]] = []
 
