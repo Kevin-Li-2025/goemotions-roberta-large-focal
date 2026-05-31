@@ -34,3 +34,15 @@ git diff --check -- emotion-model .github CONTRIBUTING.md LICENSE .gitignore
 
 For code-path changes, also run the tiny local smoke test documented in
 `emotion-model/README.md`.
+
+## CI/CD
+
+The `CI` workflow runs on pushes and pull requests that touch tracked release
+files. It validates repository hygiene, metadata, Python syntax, and offline
+unit smoke tests. The manual smoke workflow runs a tiny Hugging Face based
+end-to-end training job on demand. The `Release Metadata` workflow builds a
+metadata-only release bundle manually or when a `v*` tag is pushed.
+
+Do not add secrets to workflows. The current CI/CD setup uses only the
+repository `GITHUB_TOKEN`; Hugging Face, Kaggle, and model-weight publishing are
+handled outside GitHub Actions.

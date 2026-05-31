@@ -1,0 +1,94 @@
+name: Release Metadata
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: Package Release Metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate release metadata
+        run: |
+          set -euo pipefail
+          python -m py_compile emotion-model/train_goemotions.py
+          python -m json.tool emotion-model/kernel-metadata.json >/dev/null
+          while IFS= read -r -d '' file; do
+            python -m json.tool "$file" >/dev/null
+          done < <(find emotion-model/experiments -name '*.json' -print0)
+          if git grep -n -E '(hf_[A-Za-z0-9]{20,}|KGAT_[A-Za-z0-9_]{20,})' -- .; then
+            echo "Potential credential found in tracked files."
+            exit 1
+          fi
+
+      - name: Build metadata bundle
+        run: |
+          set -euo pipefail
+          rm -rf dist
+          mkdir -p dist/goemotions-release-metadata
+          cp .github/README.md dist/goemotions-release-metadata/GITHUB_README.md
+          cp CONTRIBUTING.md LICENSE dist/goemotions-release-metadata/
+          cp emotion-model/README.md \
+             emotion-model/MODEL_CARD.md \
+             emotion-model/PROMOTION.md \
+             emotion-model/RESEARCH.md \
+             emotion-model/kernel-metadata.json \
+             emotion-model/requirements.txt \
+             dist/goemotions-release-metadata/
+          mkdir -p dist/goemotions-release-metadata/experiments
+          cp emotion-model/experiments/*.json dist/goemotions-release-metadata/experiments/
+          tar -C dist -czf dist/goemotions-release-metadata.tgz goemotions-release-metadata
+
+      - name: Upload metadata artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: goemotions-release-metadata
+          if-no-files-found: error
+          retention-days: 30
+          path: dist/goemotions-release-metadata.tgz
+
+      - name: Publish GitHub release for version tags
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          notes="$(cat <<'EOF'
+          GoEmotions RoBERTa-large focal release metadata.
+
+          This release intentionally contains documentation, experiment records,
+          and reproducibility metadata only. Model weights are hosted on the
+          public Hugging Face and Kaggle artifacts linked from the README.
+          EOF
+          )"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" dist/goemotions-release-metadata.tgz --clobber
+          else
+            gh release create "$tag" dist/goemotions-release-metadata.tgz \
+              --title "$tag" \
+              --notes "$notes" \
+              --verify-tag
+          fi

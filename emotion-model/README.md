@@ -159,6 +159,27 @@ A completed run writes:
 Generated outputs are intentionally ignored by Git. Use the public Hugging Face
 or Kaggle artifacts for the released weights and metrics bundle.
 
+## CI/CD
+
+GitHub Actions is configured with three workflows:
+
+- `CI`: runs on `main`, pull requests, and manual dispatch. It checks tracked
+  file boundaries, rejects obvious credential leaks and local absolute paths,
+  validates JSON metadata, compiles the training script, and runs offline unit
+  smoke tests for thresholding, metric support code, JSON serialization, and
+  custom loss functions.
+- `Manual End-to-End Smoke`: runs only on manual dispatch. It installs the full
+  runtime dependencies and runs a tiny Hugging Face based training pass with
+  `hf-internal-testing/tiny-random-bert`.
+- `Release Metadata`: runs manually and on `v*` tags. It packages README,
+  model-card, research notes, experiment JSON, kernel metadata, and dependency
+  metadata into `goemotions-release-metadata.tgz`. On version tags, it attaches
+  that bundle to a GitHub Release. It does not package model weights.
+
+The workflows follow GitHub Actions' least-privilege pattern: CI uses
+read-only repository permissions, while release packaging requests write
+permissions only for creating or updating GitHub Releases.
+
 ## Repository Layout
 
 ```text

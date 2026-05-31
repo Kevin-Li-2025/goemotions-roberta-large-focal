@@ -2,6 +2,9 @@
 
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-public%20model-yellow)](https://huggingface.co/AliceYin/goemotions-roberta-large-focal-sota)
 [![Kaggle](https://img.shields.io/badge/Kaggle-public%20artifact-blue)](https://www.kaggle.com/models/kevin250304/goemotions-roberta-large-focal-sota/Transformers/roberta-large-focal-seed42)
+[![CI](https://github.com/Kevin-Li-2025/goemotions-sota-emotion-model/actions/workflows/ci.yml/badge.svg)](https://github.com/Kevin-Li-2025/goemotions-sota-emotion-model/actions/workflows/ci.yml)
+[![Manual Smoke](https://github.com/Kevin-Li-2025/goemotions-sota-emotion-model/actions/workflows/manual-smoke.yml/badge.svg)](https://github.com/Kevin-Li-2025/goemotions-sota-emotion-model/actions/workflows/manual-smoke.yml)
+[![Release Metadata](https://github.com/Kevin-Li-2025/goemotions-sota-emotion-model/actions/workflows/release.yml/badge.svg)](https://github.com/Kevin-Li-2025/goemotions-sota-emotion-model/actions/workflows/release.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](../LICENSE)
 
 RoBERTa-large multi-label classifier for Google's GoEmotions benchmark. The
@@ -25,6 +28,7 @@ validation-selected policy.
 - [Model card](../emotion-model/MODEL_CARD.md): public Hugging Face model card source.
 - [Research notes](../emotion-model/RESEARCH.md): reference points, failed runs, and iteration history.
 - [Promotion kit](../emotion-model/PROMOTION.md): concise public launch copy and links.
+- [CI/CD](../emotion-model/README.md#cicd): validation, smoke testing, and release metadata automation.
 
 ## Public Artifacts
 
