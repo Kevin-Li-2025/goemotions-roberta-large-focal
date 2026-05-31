@@ -1,6 +1,9 @@
 {
   "kaggle_kernel": "kevin250304/goemotions-roberta-large-focal-sweep",
   "kaggle_version": 1,
+  "kaggle_model_url": "https://www.kaggle.com/models/kevin250304/goemotions-roberta-large-focal-sota/Transformers/roberta-large-focal-seed42",
+  "kaggle_model_instance_id": 677345,
+  "kaggle_model_version_id": 891604,
   "kaggle_status": "COMPLETE",
   "status": "completed_strong_run",
   "model_name": "FacebookAI/roberta-large",
