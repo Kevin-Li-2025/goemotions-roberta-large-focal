@@ -4,11 +4,12 @@ This project trains a strong multi-label emotion classifier on Google's
 GoEmotions dataset: 58k curated Reddit comments labeled with 27 fine-grained
 emotion classes plus `neutral`.
 
-The default full run uses `microsoft/deberta-v3-large`, asymmetric multi-label
-loss, validation threshold tuning, and test-set reporting. The Kaggle default
-uses fp32 because the current Kaggle T4 image has an fp16 gradient-scaling
-incompatibility with this stack. It is set up for Kaggle GPU execution, with a
-local smoke-test path for fast checks on Apple Silicon MPS.
+The default full run currently uses `microsoft/deberta-v3-base`, plain
+multi-label BCE, validation threshold tuning, and test-set reporting. This is a
+stability reset after two DeBERTa-v3-large Kaggle runs diverged with
+`grad_norm=nan` and `eval_loss=nan`. The next large-model sweep should only run
+after this base configuration produces finite losses and non-collapsed
+predictions.
 
 References:
 
@@ -33,7 +34,7 @@ cd /Users/yinxiaogou/Documents/Kaggle
   --train_batch_size 8 \
   --eval_batch_size 16 \
   --max_length 96 \
-  --loss_type asymmetric \
+  --loss_type bce \
   --mixed_precision none
 ```
 
@@ -52,7 +53,7 @@ do not pass `--accelerator GPU`, because that can override the specific machine
 shape and assign an incompatible P100. Outputs are written under:
 
 ```text
-/kaggle/working/goemotions-deberta-v3-large
+/kaggle/working/goemotions-deberta-v3-base-stable
 ```
 
 Key artifacts:
@@ -80,11 +81,18 @@ If local GPU memory is enough:
   --mixed_precision none
 ```
 
-Use `microsoft/deberta-v3-large` for the strongest run; on Apple MPS it is
-usually slower and more memory-sensitive than on a Kaggle/NVIDIA GPU.
+Use `microsoft/deberta-v3-large` for the strongest run after the base sanity
+run is stable; on Apple MPS it is usually slower and more memory-sensitive than
+on a Kaggle/NVIDIA GPU.
 
 To reproduce the original weighted BCE baseline, pass:
 
 ```bash
 --loss_type bce --use_pos_weight
+```
+
+To reproduce the failed asymmetric large run, pass:
+
+```bash
+--model_name microsoft/deberta-v3-large --loss_type asymmetric --no_pos_weight
 ```

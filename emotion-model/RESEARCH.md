@@ -21,6 +21,10 @@ the hard part of this benchmark. Track `micro_f1`, `samples_f1`,
 - A public DeBERTa-v3-large GoEmotions model card reports macro-F1 0.518 and
   micro-F1 0.598:
   https://huggingface.co/duelker/samo-goemotions-deberta-v3-large
+- A public RoBERTa-large GoEmotions model card reports test macro-F1 around
+  0.519 and attributes the gain to focal loss, per-label thresholds, mean
+  pooling, targeted augmentation, and gradual unfreezing:
+  https://huggingface.co/Lakssssshya/roberta-large-goemotions
 - A public DeBERTa-v3-large model card emphasizes per-label threshold tuning:
   https://huggingface.co/FurqonAryadana/deberta-emotion-multilabel-0.5007
 - Recent literature and benchmark-style papers point to label imbalance,
@@ -31,27 +35,40 @@ the hard part of this benchmark. Track `micro_f1`, `samples_f1`,
 
 ## Iteration Roadmap
 
-1. Establish a stable DeBERTa-v3-large fp32 baseline on Kaggle T4 with
-   class-balanced BCE and per-label threshold tuning.
-2. Add loss variants:
+1. Establish a stable DeBERTa-v3-base fp32 sanity run on Kaggle T4 with plain
+   BCE, low learning rate, per-label/coordinate threshold tuning, and hard
+   non-finite loss guards.
+2. Return to DeBERTa-v3-large only after the base run has finite loss and
+   non-collapsed label density; use the stable base metrics as the regression
+   check.
+3. Add loss variants:
    - asymmetric loss for multi-label imbalance: implemented as the next default
      experiment after the weighted BCE baseline
    - focal loss: implemented as a selectable experiment
    - class-balanced focal loss: available by combining `--loss_type focal` with
      `--use_pos_weight`
-3. Run seed sweeps for the best loss and threshold policy.
-4. Train complementary models for ensembling:
+4. Run seed sweeps for the best loss and threshold policy.
+5. Train complementary models for ensembling:
    - `microsoft/deberta-v3-large`
    - `roberta-large`
    - `microsoft/deberta-v3-base` for faster sweep feedback
-5. Add probability calibration and threshold search variants:
+6. Add probability calibration and threshold search variants:
    - optimize per-label F1
    - optimize macro-F1 directly with validation coordinate descent
    - neutral exclusivity on/off
-6. Try label-dependency inference:
+7. Try label-dependency inference:
    - classifier chain style post-processing
    - co-occurrence prior correction
-7. Only after a strong clean baseline, evaluate augmentation or distillation.
+8. Only after a strong clean baseline, evaluate augmentation or distillation.
+
+## Failed Runs
+
+- 2026-05-31 weighted BCE DeBERTa-v3-large: completed, but diverged with
+  `grad_norm=nan`, `eval_loss=nan`, validation macro-F1 0.005894, and test
+  macro-F1 0.006070.
+- 2026-05-31 asymmetric-loss DeBERTa-v3-large: completed, but diverged with
+  the same NaN pattern, validation macro-F1 0.005894, and test macro-F1
+  0.006070. The next run is a stability reset, not a SOTA attempt.
 
 ## Commit And Data Policy
 

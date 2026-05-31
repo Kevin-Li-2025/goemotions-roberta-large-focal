@@ -50,24 +50,24 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train a GoEmotions multi-label emotion classifier.")
     parser.add_argument("--dataset_name", default="google-research-datasets/go_emotions")
     parser.add_argument("--dataset_config", default="simplified")
-    parser.add_argument("--model_name", default="microsoft/deberta-v3-large")
-    parser.add_argument("--output_dir", default="/kaggle/working/goemotions-deberta-v3-large")
+    parser.add_argument("--model_name", default="microsoft/deberta-v3-base")
+    parser.add_argument("--output_dir", default="/kaggle/working/goemotions-deberta-v3-base-stable")
     parser.add_argument("--max_length", type=int, default=128)
-    parser.add_argument("--epochs", type=float, default=4.0)
+    parser.add_argument("--epochs", type=float, default=3.0)
     parser.add_argument("--max_steps", type=int, default=-1)
-    parser.add_argument("--learning_rate", type=float, default=2e-5)
+    parser.add_argument("--learning_rate", type=float, default=8e-6)
     parser.add_argument("--weight_decay", type=float, default=0.01)
-    parser.add_argument("--warmup_ratio", type=float, default=0.08)
-    parser.add_argument("--train_batch_size", type=int, default=4)
-    parser.add_argument("--eval_batch_size", type=int, default=16)
-    parser.add_argument("--gradient_accumulation_steps", type=int, default=8)
-    parser.add_argument("--gradient_checkpointing", action="store_true", default=True)
+    parser.add_argument("--warmup_ratio", type=float, default=0.06)
+    parser.add_argument("--train_batch_size", type=int, default=8)
+    parser.add_argument("--eval_batch_size", type=int, default=32)
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=4)
+    parser.add_argument("--gradient_checkpointing", action="store_true", default=False)
     parser.add_argument("--no_gradient_checkpointing", dest="gradient_checkpointing", action="store_false")
     parser.add_argument("--eval_steps", type=int, default=250)
     parser.add_argument("--logging_steps", type=int, default=50)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--mixed_precision", choices=["auto", "fp16", "bf16", "none"], default="none")
-    parser.add_argument("--loss_type", choices=["bce", "focal", "asymmetric"], default="asymmetric")
+    parser.add_argument("--loss_type", choices=["bce", "focal", "asymmetric"], default="bce")
     parser.add_argument("--use_pos_weight", action="store_true", default=False)
     parser.add_argument("--no_pos_weight", dest="use_pos_weight", action="store_false")
     parser.add_argument("--max_pos_weight", type=float, default=20.0)
@@ -90,6 +90,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max_eval_samples", type=int, default=None)
     parser.add_argument("--max_test_samples", type=int, default=None)
     parser.add_argument("--resume_from_checkpoint", default=None)
+    parser.add_argument("--fail_on_nonfinite_loss", action="store_true", default=True)
+    parser.add_argument("--allow_nonfinite_loss", dest="fail_on_nonfinite_loss", action="store_false")
     parser.add_argument("--save_predictions", action="store_true", default=True)
     parser.add_argument("--no_save_predictions", dest="save_predictions", action="store_false")
     return parser.parse_args()
@@ -304,7 +306,7 @@ class WeightedMultilabelTrainer(Trainer):
     def __init__(
         self,
         *args: Any,
-        loss_type: str = "asymmetric",
+        loss_type: str = "bce",
         pos_weight: torch.Tensor | None = None,
         focal_gamma: float = 2.0,
         focal_alpha: float | None = None,
@@ -312,6 +314,7 @@ class WeightedMultilabelTrainer(Trainer):
         asl_gamma_neg: float = 4.0,
         asl_clip: float = 0.05,
         loss_eps: float = 1e-8,
+        fail_on_nonfinite_loss: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -323,6 +326,7 @@ class WeightedMultilabelTrainer(Trainer):
         self.asl_gamma_neg = asl_gamma_neg
         self.asl_clip = asl_clip
         self.loss_eps = loss_eps
+        self.fail_on_nonfinite_loss = fail_on_nonfinite_loss
 
     def _bce_loss(self, logits: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
         pos_weight = self.pos_weight.to(logits.device) if self.pos_weight is not None else None
@@ -380,6 +384,8 @@ class WeightedMultilabelTrainer(Trainer):
         labels = inputs.pop("labels")
         outputs = model(**inputs)
         logits = outputs.logits
+        if self.fail_on_nonfinite_loss and not torch.isfinite(logits).all():
+            raise FloatingPointError("Non-finite logits detected; aborting unstable training run.")
         labels = labels.to(dtype=torch.float32)
         if self.loss_type == "bce":
             loss = self._bce_loss(logits, labels)
@@ -389,6 +395,8 @@ class WeightedMultilabelTrainer(Trainer):
             loss = self._asymmetric_loss(logits, labels)
         else:
             raise ValueError(f"Unsupported loss_type: {self.loss_type}")
+        if self.fail_on_nonfinite_loss and not torch.isfinite(loss):
+            raise FloatingPointError(f"Non-finite {self.loss_type} loss detected; aborting unstable training run.")
         return (loss, outputs) if return_outputs else loss
 
 
@@ -408,6 +416,7 @@ def build_training_args(args: argparse.Namespace, use_cuda: bool) -> TrainingArg
         "weight_decay": args.weight_decay,
         "warmup_ratio": args.warmup_ratio,
         "logging_steps": args.logging_steps,
+        "logging_nan_inf_filter": False,
         "save_strategy": strategy,
         "save_total_limit": 2,
         "load_best_model_at_end": True,
@@ -579,6 +588,7 @@ def main() -> None:
         "asl_gamma_neg": args.asl_gamma_neg,
         "asl_clip": args.asl_clip,
         "loss_eps": args.loss_eps,
+        "fail_on_nonfinite_loss": args.fail_on_nonfinite_loss,
     }
     trainer_signature = inspect.signature(Trainer.__init__)
     if "processing_class" in trainer_signature.parameters:
@@ -694,9 +704,12 @@ def main() -> None:
             "train_batch_size": args.train_batch_size,
             "eval_batch_size": args.eval_batch_size,
             "gradient_accumulation_steps": args.gradient_accumulation_steps,
+            "gradient_checkpointing": args.gradient_checkpointing,
+            "mixed_precision": args.mixed_precision,
             "max_length": args.max_length,
             "seed": args.seed,
             "threshold_coordinate_passes": args.threshold_coordinate_passes,
+            "fail_on_nonfinite_loss": args.fail_on_nonfinite_loss,
         },
         "threshold_selection": {
             "selected": selected_name,

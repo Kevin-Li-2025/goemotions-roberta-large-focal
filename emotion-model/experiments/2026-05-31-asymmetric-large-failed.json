@@ -1,0 +1,38 @@
+{
+  "kaggle_kernel": "kevin250304/goemotions-deberta-v3-large",
+  "kaggle_status": "COMPLETE",
+  "status": "completed_bad_run",
+  "root_cause": "The DeBERTa-v3-large asymmetric-loss run diverged numerically. Kaggle logs show the first logged train loss at 1.567e+09, repeated grad_norm=nan, eval_loss=nan, and unchanged threshold candidates. The final predictions collapsed to one-label fallback density.",
+  "model_name": "microsoft/deberta-v3-large",
+  "loss_type": "asymmetric",
+  "use_pos_weight": false,
+  "learning_rate": 2e-05,
+  "epochs": 4.0,
+  "train_batch_size": 4,
+  "gradient_accumulation_steps": 8,
+  "selected_thresholds": "fixed_0_5",
+  "validation": {
+    "macro_f1": 0.005894004541282188,
+    "micro_f1": 0.08266982890055903,
+    "samples_f1": 0.07927263791620592,
+    "weighted_f1": 0.012623147030106554,
+    "subset_accuracy": 0.060081091043125694,
+    "hamming_loss": 0.07128376599441841,
+    "label_density": 0.03571428571428571
+  },
+  "test": {
+    "macro_f1": 0.006069802731411229,
+    "micro_f1": 0.0857434501531133,
+    "samples_f1": 0.08263620170751182,
+    "weighted_f1": 0.013534058484069406,
+    "subset_accuracy": 0.06412382531785517,
+    "hamming_loss": 0.07073100107925978,
+    "label_density": 0.03571428571428571
+  },
+  "research_context": [
+    "GoEmotions ACL 2020 reports 58k Reddit comments and a BERT average F1 of 0.46.",
+    "Public Hugging Face GoEmotions models report DeBERTa/RoBERTa macro F1 around 0.47 to 0.52 when training is stable and thresholds are tuned.",
+    "ASL is still a valid imbalance loss, but this run's failure happened before thresholding could matter."
+  ],
+  "next_experiment": "Switch the default Kaggle run to a stable DeBERTa-v3-base sanity run with plain BCE, lower learning rate, no gradient checkpointing, larger eval batch, and hard non-finite loss/logit guards before returning to large-model focal or ASL sweeps."
+}
