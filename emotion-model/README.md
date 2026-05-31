@@ -14,7 +14,7 @@ thresholds by validation macro-F1 and reached validation macro-F1 0.5659 and
 test macro-F1 0.5330. Per-label thresholds reached test macro-F1 0.5350 but
 were not the validation-selected policy.
 
-Uploaded model artifacts:
+Uploaded public model artifacts:
 
 - Kaggle Models: https://www.kaggle.com/models/kevin250304/goemotions-roberta-large-focal-sota/Transformers/roberta-large-focal-seed42
 - Hugging Face: https://huggingface.co/AliceYin/goemotions-roberta-large-focal-sota
