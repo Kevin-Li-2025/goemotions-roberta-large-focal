@@ -59,7 +59,9 @@ Key artifacts:
 
 - `model/`: fine-tuned model and tokenizer
 - `metrics.json`: validation/test metrics for fixed, global, and per-label thresholds
-- `thresholds.json`: selected validation-tuned decision thresholds
+- `thresholds.json`: selected validation-tuned decision thresholds, including a
+  coordinate-search candidate that directly optimizes validation macro-F1 after
+  post-processing
 - `validation_predictions.csv` and `test_predictions.csv`: decoded labels and probabilities
 
 ## Local Full Run

@@ -1,0 +1,26 @@
+{
+  "kaggle_kernel": "kevin250304/goemotions-deberta-v3-large",
+  "kaggle_last_run_time_utc": "2026-05-31T03:27:56.667000Z",
+  "status": "completed_bad_run",
+  "root_cause": "Weighted BCE baseline diverged: logs show grad_norm=nan and eval_loss=nan from the first epoch onward.",
+  "model_name": "microsoft/deberta-v3-large",
+  "loss_type": "weighted_bce",
+  "selected_thresholds": "fixed_0_5",
+  "validation": {
+    "macro_f1": 0.005894004541282188,
+    "micro_f1": 0.08266982890055903,
+    "samples_f1": 0.07927263791620592,
+    "weighted_f1": 0.012623147030106554,
+    "subset_accuracy": 0.060081091043125694,
+    "hamming_loss": 0.07128376599441841
+  },
+  "test": {
+    "macro_f1": 0.006069802731411229,
+    "micro_f1": 0.0857434501531133,
+    "samples_f1": 0.08263620170751182,
+    "weighted_f1": 0.013534058484069406,
+    "subset_accuracy": 0.06412382531785517,
+    "hamming_loss": 0.07073100107925978
+  },
+  "next_experiment": "Run DeBERTa-v3-large with asymmetric loss, no positive class weighting, and coordinate-search validation threshold tuning."
+}

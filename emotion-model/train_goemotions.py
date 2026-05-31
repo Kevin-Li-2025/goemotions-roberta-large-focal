@@ -80,6 +80,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--threshold_start", type=float, default=0.05)
     parser.add_argument("--threshold_stop", type=float, default=0.95)
     parser.add_argument("--threshold_step", type=float, default=0.02)
+    parser.add_argument("--threshold_coordinate_passes", type=int, default=2)
     parser.add_argument("--threshold_metric", choices=["macro_f1", "micro_f1", "samples_f1"], default="macro_f1")
     parser.add_argument("--neutral_exclusive", action="store_true", default=True)
     parser.add_argument("--allow_neutral_with_other_labels", dest="neutral_exclusive", action="store_false")
@@ -243,6 +244,60 @@ def tune_per_label_thresholds(y_true: np.ndarray, probs: np.ndarray, grid: np.nd
                 best_threshold = float(threshold)
         thresholds[label_index] = best_threshold
     return thresholds
+
+
+def tune_coordinate_thresholds(
+    y_true: np.ndarray,
+    probs: np.ndarray,
+    grid: np.ndarray,
+    *,
+    initial_thresholds: np.ndarray,
+    metric: str,
+    passes: int,
+    force_one: bool,
+    neutral_index: int | None,
+    neutral_exclusive: bool,
+) -> tuple[np.ndarray, dict[str, float]]:
+    thresholds = initial_thresholds.astype(np.float32).copy()
+    best_preds = apply_thresholds(
+        probs,
+        thresholds,
+        force_one=force_one,
+        neutral_index=neutral_index,
+        neutral_exclusive=neutral_exclusive,
+    )
+    best_metrics = summarize_metrics(y_true, best_preds)
+    best_score = best_metrics[metric]
+
+    for _ in range(max(passes, 0)):
+        improved = False
+        for label_index in range(y_true.shape[1]):
+            label_best_value = thresholds[label_index]
+            label_best_metrics = best_metrics
+            label_best_score = best_score
+            for threshold in grid:
+                thresholds[label_index] = threshold
+                preds = apply_thresholds(
+                    probs,
+                    thresholds,
+                    force_one=force_one,
+                    neutral_index=neutral_index,
+                    neutral_exclusive=neutral_exclusive,
+                )
+                metrics = summarize_metrics(y_true, preds)
+                score = metrics[metric]
+                if score > label_best_score:
+                    label_best_score = score
+                    label_best_value = float(threshold)
+                    label_best_metrics = metrics
+            thresholds[label_index] = label_best_value
+            if label_best_score > best_score:
+                best_score = label_best_score
+                best_metrics = label_best_metrics
+                improved = True
+        if not improved:
+            break
+    return thresholds, best_metrics
 
 
 class WeightedMultilabelTrainer(Trainer):
@@ -553,6 +608,17 @@ def main() -> None:
         neutral_exclusive=args.neutral_exclusive,
     )
     per_label_thresholds = tune_per_label_thresholds(val_true, val_probs, grid)
+    coordinate_thresholds, coordinate_val_metrics = tune_coordinate_thresholds(
+        val_true,
+        val_probs,
+        grid,
+        initial_thresholds=per_label_thresholds,
+        metric=args.threshold_metric,
+        passes=args.threshold_coordinate_passes,
+        force_one=args.force_at_least_one_label,
+        neutral_index=neutral_index,
+        neutral_exclusive=args.neutral_exclusive,
+    )
 
     fixed_val_pred = apply_thresholds(
         val_probs,
@@ -579,6 +645,7 @@ def main() -> None:
             "validation": global_val_metrics,
         },
         "per_label": {"thresholds": per_label_thresholds, "validation": per_label_val_metrics},
+        "coordinate": {"thresholds": coordinate_thresholds, "validation": coordinate_val_metrics},
     }
     selected_name = max(
         threshold_candidates,
@@ -595,6 +662,7 @@ def main() -> None:
             "per_label": dict(zip(label_names, threshold_candidates["global"]["thresholds"].tolist(), strict=True)),
         },
         "per_label": dict(zip(label_names, per_label_thresholds.tolist(), strict=True)),
+        "coordinate": dict(zip(label_names, coordinate_thresholds.tolist(), strict=True)),
     }
     save_json(output_dir / "thresholds.json", thresholds_payload)
 
@@ -628,6 +696,7 @@ def main() -> None:
             "gradient_accumulation_steps": args.gradient_accumulation_steps,
             "max_length": args.max_length,
             "seed": args.seed,
+            "threshold_coordinate_passes": args.threshold_coordinate_passes,
         },
         "threshold_selection": {
             "selected": selected_name,
