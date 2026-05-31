@@ -3,6 +3,7 @@
 # local competition folders, datasets, notebooks, reports, and scratch files.
 /*
 !/.gitignore
+!/README.md
 !/.github/
 !/.github/**
 !/CONTRIBUTING.md

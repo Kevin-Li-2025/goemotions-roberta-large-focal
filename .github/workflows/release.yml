@@ -48,8 +48,7 @@ jobs:
           set -euo pipefail
           rm -rf dist
           mkdir -p dist/goemotions-release-metadata
-          cp .github/README.md dist/goemotions-release-metadata/GITHUB_README.md
-          cp CONTRIBUTING.md LICENSE dist/goemotions-release-metadata/
+          cp README.md CONTRIBUTING.md LICENSE dist/goemotions-release-metadata/
           cp emotion-model/README.md \
              emotion-model/MODEL_CARD.md \
              emotion-model/PROMOTION.md \

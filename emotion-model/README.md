@@ -91,8 +91,8 @@ print(predictions)
 Create an environment from the repository root:
 
 ```bash
-git clone https://github.com/Kevin-Li-2025/goemotions-sota-emotion-model.git
-cd goemotions-sota-emotion-model
+git clone https://github.com/Kevin-Li-2025/goemotions-roberta-large-focal.git
+cd goemotions-roberta-large-focal
 python -m venv .venv
 .venv/bin/pip install -r emotion-model/requirements.txt
 ```
