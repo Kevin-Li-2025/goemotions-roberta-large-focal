@@ -23,7 +23,9 @@ the hard part of this benchmark. Track `micro_f1`, `samples_f1`,
   https://huggingface.co/duelker/samo-goemotions-deberta-v3-large
 - A public RoBERTa-large GoEmotions model card reports test macro-F1 around
   0.519 and attributes the gain to focal loss, per-label thresholds, mean
-  pooling, targeted augmentation, and gradual unfreezing:
+  pooling, targeted augmentation, and gradual unfreezing. This is now the
+  default direction because the Kaggle DeBERTa-v3 runs are failing before
+  producing usable logits:
   https://huggingface.co/Lakssssshya/roberta-large-goemotions
 - A public DeBERTa-v3-large model card emphasizes per-label threshold tuning:
   https://huggingface.co/FurqonAryadana/deberta-emotion-multilabel-0.5007
@@ -35,12 +37,10 @@ the hard part of this benchmark. Track `micro_f1`, `samples_f1`,
 
 ## Iteration Roadmap
 
-1. Establish a stable DeBERTa-v3-base fp32 sanity run on Kaggle T4 with plain
-   BCE, low learning rate, per-label/coordinate threshold tuning, and hard
-   non-finite loss guards.
-2. Return to DeBERTa-v3-large only after the base run has finite loss and
-   non-collapsed label density; use the stable base metrics as the regression
-   check.
+1. Establish a stable RoBERTa-large run on Kaggle T4 with focal loss,
+   per-label/coordinate threshold tuning, and hard non-finite loss guards.
+2. Return to DeBERTa-v3-large only after its Kaggle non-finite-logit failure is
+   isolated; use RoBERTa metrics as the active regression check.
 3. Add loss variants:
    - asymmetric loss for multi-label imbalance: implemented as the next default
      experiment after the weighted BCE baseline
@@ -69,6 +69,9 @@ the hard part of this benchmark. Track `micro_f1`, `samples_f1`,
 - 2026-05-31 asymmetric-loss DeBERTa-v3-large: completed, but diverged with
   the same NaN pattern, validation macro-F1 0.005894, and test macro-F1
   0.006070. The next run is a stability reset, not a SOTA attempt.
+- 2026-05-31 stable DeBERTa-v3-base: failed fast before metrics. The first
+  guarded Kaggle run stopped with non-finite logits on Tesla T4, so the active
+  path is now RoBERTa-large rather than more DeBERTa sweeps.
 
 ## Commit And Data Policy
 

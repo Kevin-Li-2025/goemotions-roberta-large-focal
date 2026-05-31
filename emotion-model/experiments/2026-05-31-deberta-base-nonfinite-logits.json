@@ -1,0 +1,21 @@
+{
+  "kaggle_kernel": "kevin250304/goemotions-deberta-v3-stable-sweep",
+  "kaggle_status": "ERROR",
+  "status": "failed_fast",
+  "root_cause": "The stable DeBERTa-v3-base reset failed before metrics were produced. The new guard stopped the run after a CUDA/T4 training step produced non-finite logits, which means the failure is in the DeBERTa-v3 forward/update path on Kaggle rather than threshold selection or the BCE/ASL objective.",
+  "model_name": "microsoft/deberta-v3-base",
+  "loss_type": "bce",
+  "use_pos_weight": false,
+  "learning_rate": 8e-06,
+  "epochs": 3.0,
+  "train_batch_size": 8,
+  "gradient_accumulation_steps": 4,
+  "validation": null,
+  "test": null,
+  "log_evidence": [
+    "Device summary: Tesla T4, torch 2.10.0+cu128",
+    "Tokenization and model loading completed",
+    "FloatingPointError: Non-finite logits detected; aborting unstable training run"
+  ],
+  "next_experiment": "Move off the DeBERTa-v3 path on Kaggle and run RoBERTa-large with focal loss plus per-label/coordinate threshold tuning, matching the strongest public GoEmotions pattern more closely."
+}

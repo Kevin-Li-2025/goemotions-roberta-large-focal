@@ -1,6 +1,6 @@
 {
-  "id": "kevin250304/goemotions-deberta-v3-stable-sweep",
-  "title": "GoEmotions DeBERTa v3 Stable Sweep",
+  "id": "kevin250304/goemotions-roberta-large-focal-sweep",
+  "title": "GoEmotions RoBERTa Large Focal Sweep",
   "code_file": "train_goemotions.py",
   "language": "python",
   "kernel_type": "script",

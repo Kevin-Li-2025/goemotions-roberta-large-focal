@@ -4,12 +4,10 @@ This project trains a strong multi-label emotion classifier on Google's
 GoEmotions dataset: 58k curated Reddit comments labeled with 27 fine-grained
 emotion classes plus `neutral`.
 
-The default full run currently uses `microsoft/deberta-v3-base`, plain
-multi-label BCE, validation threshold tuning, and test-set reporting. This is a
-stability reset after two DeBERTa-v3-large Kaggle runs diverged with
-`grad_norm=nan` and `eval_loss=nan`. The next large-model sweep should only run
-after this base configuration produces finite losses and non-collapsed
-predictions.
+The default full run currently uses `FacebookAI/roberta-large`, focal loss,
+validation threshold tuning, and test-set reporting. This replaces the
+DeBERTa-v3 path after both DeBERTa-v3-large and DeBERTa-v3-base produced
+non-finite values on Kaggle T4 before usable metrics were available.
 
 References:
 
@@ -34,7 +32,7 @@ cd /Users/yinxiaogou/Documents/Kaggle
   --train_batch_size 8 \
   --eval_batch_size 16 \
   --max_length 96 \
-  --loss_type bce \
+  --loss_type focal \
   --mixed_precision none
 ```
 
@@ -53,7 +51,7 @@ do not pass `--accelerator GPU`, because that can override the specific machine
 shape and assign an incompatible P100. Outputs are written under:
 
 ```text
-/kaggle/working/goemotions-deberta-v3-base-stable
+/kaggle/working/goemotions-roberta-large-focal
 ```
 
 Key artifacts:
@@ -81,9 +79,9 @@ If local GPU memory is enough:
   --mixed_precision none
 ```
 
-Use `microsoft/deberta-v3-large` for the strongest run after the base sanity
-run is stable; on Apple MPS it is usually slower and more memory-sensitive than
-on a Kaggle/NVIDIA GPU.
+Use DeBERTa-v3 only for explicit debugging until the Kaggle non-finite-logit
+failure is understood. The current strongest practical path is RoBERTa-large
+with imbalance-aware loss and tuned thresholds.
 
 To reproduce the original weighted BCE baseline, pass:
 
@@ -95,4 +93,10 @@ To reproduce the failed asymmetric large run, pass:
 
 ```bash
 --model_name microsoft/deberta-v3-large --loss_type asymmetric --no_pos_weight
+```
+
+To reproduce the failed DeBERTa-v3-base stability reset, pass:
+
+```bash
+--model_name microsoft/deberta-v3-base --loss_type bce --learning_rate 8e-6
 ```
