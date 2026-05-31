@@ -1,5 +1,10 @@
 # GoEmotions Emotion Model
 
+Public artifacts:
+
+- Hugging Face model: https://huggingface.co/AliceYin/goemotions-roberta-large-focal-sota
+- Kaggle model: https://www.kaggle.com/models/kevin250304/goemotions-roberta-large-focal-sota/Transformers/roberta-large-focal-seed42
+
 This project trains a strong multi-label emotion classifier on Google's
 GoEmotions dataset: 58k curated Reddit comments labeled with 27 fine-grained
 emotion classes plus `neutral`.
@@ -14,10 +19,42 @@ thresholds by validation macro-F1 and reached validation macro-F1 0.5659 and
 test macro-F1 0.5330. Per-label thresholds reached test macro-F1 0.5350 but
 were not the validation-selected policy.
 
-Uploaded public model artifacts:
+## Results
 
-- Kaggle Models: https://www.kaggle.com/models/kevin250304/goemotions-roberta-large-focal-sota/Transformers/roberta-large-focal-seed42
-- Hugging Face: https://huggingface.co/AliceYin/goemotions-roberta-large-focal-sota
+| Split | Macro-F1 | Micro-F1 | Samples-F1 |
+| --- | ---: | ---: | ---: |
+| Validation | 0.5659 | 0.5966 | 0.6051 |
+| Test | 0.5330 | 0.5767 | 0.5859 |
+
+The validation-selected coordinate threshold policy outperforms the strongest
+public model-card reference found during this run, which reports test macro-F1
+0.519 for RoBERTa-large on GoEmotions. The best per-label threshold candidate
+reached test macro-F1 0.5350, but it was not the validation-selected policy.
+
+## Quick Inference
+
+```python
+import json
+import torch
+from huggingface_hub import hf_hub_download
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+repo_id = "AliceYin/goemotions-roberta-large-focal-sota"
+tokenizer = AutoTokenizer.from_pretrained(repo_id)
+model = AutoModelForSequenceClassification.from_pretrained(repo_id)
+threshold_data = json.load(open(hf_hub_download(repo_id, "thresholds.json")))
+labels = json.load(open(hf_hub_download(repo_id, "labels.json")))["label_names"]
+threshold_map = threshold_data[threshold_data["selected"]]
+thresholds = [threshold_map[label] for label in labels]
+
+text = "I finally got this working and I am so relieved."
+inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=160)
+with torch.no_grad():
+    probs = torch.sigmoid(model(**inputs).logits)[0]
+
+predicted = [label for label, prob, threshold in zip(labels, probs, thresholds) if prob >= threshold]
+print(predicted)
+```
 
 References:
 

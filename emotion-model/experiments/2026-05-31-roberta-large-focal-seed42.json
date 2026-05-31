@@ -6,7 +6,11 @@
   "huggingface_repo_id": "AliceYin/goemotions-roberta-large-focal-sota",
   "huggingface_model_url": "https://huggingface.co/AliceYin/goemotions-roberta-large-focal-sota",
   "huggingface_model_visibility": "public",
-  "huggingface_commit_sha": "a679dc5d841db8485274c6e3c878c3c264e20f01",
+  "huggingface_commit_sha": "3074f27b2e24f89036844f1aba8bee92f1170261",
+  "promotion_assets": [
+    "MODEL_CARD.md",
+    "PROMOTION.md"
+  ],
   "kaggle_model_instance_id": 677345,
   "kaggle_model_version_id": 891604,
   "kaggle_status": "COMPLETE",
