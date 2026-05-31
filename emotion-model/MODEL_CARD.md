@@ -33,7 +33,7 @@ public model card found during this iteration reported test macro-F1 0.519.
 ## Links
 
 - Kaggle model artifact: https://www.kaggle.com/models/kevin250304/goemotions-roberta-large-focal-sota/Transformers/roberta-large-focal-seed42
-- Training kernel: https://www.kaggle.com/code/kevin250304/goemotions-roberta-large-focal-sweep
+- Training source: `emotion-model/train_goemotions.py` in the release repository
 - Dataset: https://huggingface.co/datasets/google-research-datasets/go_emotions
 - GoEmotions paper: https://aclanthology.org/2020.acl-main.372/
 
@@ -124,5 +124,5 @@ print(predicted)
 ## Reproducibility
 
 The Kaggle artifact includes `metrics.json`, `thresholds.json`, `labels.json`,
-the tokenizer, the model weights, and the Kaggle run log. The training kernel
+the tokenizer, the model weights, and the Kaggle run log. The training script
 and experiment notes record the exact settings used for the reported metrics.

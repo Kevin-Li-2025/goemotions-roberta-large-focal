@@ -1,15 +1,40 @@
+# This repository lives inside a broader local Kaggle workspace. Keep the
+# GitHub repo scoped to the GoEmotions release assets and ignore unrelated
+# local competition folders, datasets, notebooks, reports, and scratch files.
+/*
+!/.gitignore
+!/.github/
+!/.github/**
+!/CONTRIBUTING.md
+!/LICENSE
+!/emotion-model/
+!/emotion-model/**
+
+# Python and OS noise.
 .venv/
 __pycache__/
 *.pyc
 .DS_Store
 
-data/interim/*.npy
-data/interim/*.npz
+# Local runtime outputs and caches.
+data/
 models/
 logs/
+reports/
+submissions/
+tmp/
 emotion-model/outputs/
 emotion-model/kaggle-output/
+emotion-model/**/__pycache__/
+emotion-model/**/.ipynb_checkpoints/
 
-# Keep generated reports/submissions local unless explicitly selected.
-reports/*.csv
-submissions/*.csv
+# Never commit generated model artifacts, raw predictions, or large binaries.
+*.safetensors
+*.bin
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.npy
+*.npz
+emotion-model/**/*_predictions.csv

@@ -1,6 +1,6 @@
 {
   "id": "kevin250304/goemotions-roberta-large-focal-sweep",
-  "title": "GoEmotions RoBERTa Large Focal Sweep",
+  "title": "GoEmotions RoBERTa Large Focal Release",
   "code_file": "train_goemotions.py",
   "language": "python",
   "kernel_type": "script",
@@ -12,8 +12,10 @@
   "keywords": [
     "goemotions",
     "emotion-classification",
-    "deberta-v3",
-    "multi-label"
+    "roberta-large",
+    "multi-label",
+    "focal-loss",
+    "threshold-optimization"
   ],
   "dataset_sources": [],
   "kernel_sources": [],
