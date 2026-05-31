@@ -4,11 +4,11 @@ This project trains a strong multi-label emotion classifier on Google's
 GoEmotions dataset: 58k curated Reddit comments labeled with 27 fine-grained
 emotion classes plus `neutral`.
 
-The default full run uses `microsoft/deberta-v3-large`, class-balanced
-multi-label loss, validation threshold tuning, and test-set reporting. The
-Kaggle default uses fp32 because the current Kaggle T4 image has an fp16
-gradient-scaling incompatibility with this stack. It is set up for Kaggle GPU
-execution, with a local smoke-test path for fast checks on Apple Silicon MPS.
+The default full run uses `microsoft/deberta-v3-large`, asymmetric multi-label
+loss, validation threshold tuning, and test-set reporting. The Kaggle default
+uses fp32 because the current Kaggle T4 image has an fp16 gradient-scaling
+incompatibility with this stack. It is set up for Kaggle GPU execution, with a
+local smoke-test path for fast checks on Apple Silicon MPS.
 
 References:
 
@@ -33,6 +33,7 @@ cd /Users/yinxiaogou/Documents/Kaggle
   --train_batch_size 8 \
   --eval_batch_size 16 \
   --max_length 96 \
+  --loss_type asymmetric \
   --mixed_precision none
 ```
 
@@ -79,3 +80,9 @@ If local GPU memory is enough:
 
 Use `microsoft/deberta-v3-large` for the strongest run; on Apple MPS it is
 usually slower and more memory-sensitive than on a Kaggle/NVIDIA GPU.
+
+To reproduce the original weighted BCE baseline, pass:
+
+```bash
+--loss_type bce --use_pos_weight
+```

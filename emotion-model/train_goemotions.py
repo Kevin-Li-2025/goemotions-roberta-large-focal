@@ -67,9 +67,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--logging_steps", type=int, default=50)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--mixed_precision", choices=["auto", "fp16", "bf16", "none"], default="none")
-    parser.add_argument("--use_pos_weight", action="store_true", default=True)
+    parser.add_argument("--loss_type", choices=["bce", "focal", "asymmetric"], default="asymmetric")
+    parser.add_argument("--use_pos_weight", action="store_true", default=False)
     parser.add_argument("--no_pos_weight", dest="use_pos_weight", action="store_false")
     parser.add_argument("--max_pos_weight", type=float, default=20.0)
+    parser.add_argument("--focal_gamma", type=float, default=2.0)
+    parser.add_argument("--focal_alpha", type=float, default=None)
+    parser.add_argument("--asl_gamma_pos", type=float, default=0.0)
+    parser.add_argument("--asl_gamma_neg", type=float, default=4.0)
+    parser.add_argument("--asl_clip", type=float, default=0.05)
+    parser.add_argument("--loss_eps", type=float, default=1e-8)
     parser.add_argument("--threshold_start", type=float, default=0.05)
     parser.add_argument("--threshold_stop", type=float, default=0.95)
     parser.add_argument("--threshold_step", type=float, default=0.02)
@@ -239,9 +246,74 @@ def tune_per_label_thresholds(y_true: np.ndarray, probs: np.ndarray, grid: np.nd
 
 
 class WeightedMultilabelTrainer(Trainer):
-    def __init__(self, *args: Any, pos_weight: torch.Tensor | None = None, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        *args: Any,
+        loss_type: str = "asymmetric",
+        pos_weight: torch.Tensor | None = None,
+        focal_gamma: float = 2.0,
+        focal_alpha: float | None = None,
+        asl_gamma_pos: float = 0.0,
+        asl_gamma_neg: float = 4.0,
+        asl_clip: float = 0.05,
+        loss_eps: float = 1e-8,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
+        self.loss_type = loss_type
         self.pos_weight = pos_weight
+        self.focal_gamma = focal_gamma
+        self.focal_alpha = focal_alpha
+        self.asl_gamma_pos = asl_gamma_pos
+        self.asl_gamma_neg = asl_gamma_neg
+        self.asl_clip = asl_clip
+        self.loss_eps = loss_eps
+
+    def _bce_loss(self, logits: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        pos_weight = self.pos_weight.to(logits.device) if self.pos_weight is not None else None
+        return torch.nn.functional.binary_cross_entropy_with_logits(
+            logits,
+            labels,
+            pos_weight=pos_weight,
+            reduction="mean",
+        )
+
+    def _focal_loss(self, logits: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        pos_weight = self.pos_weight.to(logits.device) if self.pos_weight is not None else None
+        bce = torch.nn.functional.binary_cross_entropy_with_logits(
+            logits,
+            labels,
+            pos_weight=pos_weight,
+            reduction="none",
+        )
+        probs = torch.sigmoid(logits)
+        pt = probs * labels + (1.0 - probs) * (1.0 - labels)
+        loss = bce * torch.pow(1.0 - pt, self.focal_gamma)
+        if self.focal_alpha is not None:
+            alpha = self.focal_alpha * labels + (1.0 - self.focal_alpha) * (1.0 - labels)
+            loss = loss * alpha
+        return loss.mean()
+
+    def _asymmetric_loss(self, logits: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        probs_pos = torch.sigmoid(logits)
+        probs_neg = 1.0 - probs_pos
+        if self.asl_clip > 0:
+            probs_neg = torch.clamp(probs_neg + self.asl_clip, max=1.0)
+
+        pos_loss = labels * torch.log(torch.clamp(probs_pos, min=self.loss_eps))
+        neg_loss = (1.0 - labels) * torch.log(torch.clamp(probs_neg, min=self.loss_eps))
+        loss = pos_loss + neg_loss
+
+        if self.asl_gamma_pos > 0 or self.asl_gamma_neg > 0:
+            pt = probs_pos * labels + probs_neg * (1.0 - labels)
+            gamma = self.asl_gamma_pos * labels + self.asl_gamma_neg * (1.0 - labels)
+            loss = loss * torch.pow(1.0 - pt, gamma)
+
+        if self.pos_weight is not None:
+            pos_weight = self.pos_weight.to(logits.device)
+            loss = loss * (labels * pos_weight + (1.0 - labels))
+
+        return -loss.mean()
 
     def compute_loss(
         self,
@@ -253,9 +325,15 @@ class WeightedMultilabelTrainer(Trainer):
         labels = inputs.pop("labels")
         outputs = model(**inputs)
         logits = outputs.logits
-        pos_weight = self.pos_weight.to(logits.device) if self.pos_weight is not None else None
-        loss_fct = torch.nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-        loss = loss_fct(logits, labels.to(dtype=torch.float32))
+        labels = labels.to(dtype=torch.float32)
+        if self.loss_type == "bce":
+            loss = self._bce_loss(logits, labels)
+        elif self.loss_type == "focal":
+            loss = self._focal_loss(logits, labels)
+        elif self.loss_type == "asymmetric":
+            loss = self._asymmetric_loss(logits, labels)
+        else:
+            raise ValueError(f"Unsupported loss_type: {self.loss_type}")
         return (loss, outputs) if return_outputs else loss
 
 
@@ -438,7 +516,14 @@ def main() -> None:
         "eval_dataset": tokenized["validation"],
         "data_collator": DataCollatorWithPadding(tokenizer=tokenizer),
         "compute_metrics": compute_metrics_factory(args, neutral_index),
+        "loss_type": args.loss_type,
         "pos_weight": pos_weight,
+        "focal_gamma": args.focal_gamma,
+        "focal_alpha": args.focal_alpha,
+        "asl_gamma_pos": args.asl_gamma_pos,
+        "asl_gamma_neg": args.asl_gamma_neg,
+        "asl_clip": args.asl_clip,
+        "loss_eps": args.loss_eps,
     }
     trainer_signature = inspect.signature(Trainer.__init__)
     if "processing_class" in trainer_signature.parameters:
@@ -523,6 +608,27 @@ def main() -> None:
             "test_rows": len(raw["test"]),
         },
         "model_name": args.model_name,
+        "training": {
+            "loss_type": args.loss_type,
+            "use_pos_weight": args.use_pos_weight,
+            "max_pos_weight": args.max_pos_weight,
+            "focal_gamma": args.focal_gamma,
+            "focal_alpha": args.focal_alpha,
+            "asl_gamma_pos": args.asl_gamma_pos,
+            "asl_gamma_neg": args.asl_gamma_neg,
+            "asl_clip": args.asl_clip,
+            "loss_eps": args.loss_eps,
+            "epochs": args.epochs,
+            "max_steps": args.max_steps,
+            "learning_rate": args.learning_rate,
+            "weight_decay": args.weight_decay,
+            "warmup_ratio": args.warmup_ratio,
+            "train_batch_size": args.train_batch_size,
+            "eval_batch_size": args.eval_batch_size,
+            "gradient_accumulation_steps": args.gradient_accumulation_steps,
+            "max_length": args.max_length,
+            "seed": args.seed,
+        },
         "threshold_selection": {
             "selected": selected_name,
             "metric": args.threshold_metric,

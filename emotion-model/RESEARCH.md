@@ -34,9 +34,11 @@ the hard part of this benchmark. Track `micro_f1`, `samples_f1`,
 1. Establish a stable DeBERTa-v3-large fp32 baseline on Kaggle T4 with
    class-balanced BCE and per-label threshold tuning.
 2. Add loss variants:
-   - focal loss
-   - asymmetric loss for multi-label imbalance
-   - class-balanced focal loss
+   - asymmetric loss for multi-label imbalance: implemented as the next default
+     experiment after the weighted BCE baseline
+   - focal loss: implemented as a selectable experiment
+   - class-balanced focal loss: available by combining `--loss_type focal` with
+     `--use_pos_weight`
 3. Run seed sweeps for the best loss and threshold policy.
 4. Train complementary models for ensembling:
    - `microsoft/deberta-v3-large`
