@@ -70,12 +70,15 @@
     "coordinate_samples_f1": 0.6051252347603251
   },
   "robustness_followup": {
+    "seed_sweep_kernel": "likevin2005/goemotions-roberta-large-focal-seed-sweep",
+    "seed_sweep_kernel_url": "https://www.kaggle.com/code/likevin2005/goemotions-roberta-large-focal-seed-sweep",
+    "seed_sweep_kernel_version": 2,
     "seed_sweep_seeds": [
       43,
       44
     ],
     "bootstrap_samples_per_seed": 1000,
-    "status": "prepared"
+    "status": "running"
   },
   "public_reference_points": [
     {
