@@ -71,6 +71,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--no_gradient_checkpointing", dest="gradient_checkpointing", action="store_false")
     parser.add_argument("--eval_steps", type=int, default=250)
     parser.add_argument("--logging_steps", type=int, default=50)
+    parser.add_argument("--checkpoint_strategy", choices=["auto", "no", "steps", "epoch"], default="auto")
+    parser.add_argument("--save_total_limit", type=int, default=2)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--mixed_precision", choices=["auto", "fp16", "bf16", "none"], default="none")
     parser.add_argument("--loss_type", choices=["bce", "focal", "asymmetric"], default="focal")
@@ -103,6 +105,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--allow_nonfinite_loss", dest="fail_on_nonfinite_loss", action="store_false")
     parser.add_argument("--save_predictions", action="store_true", default=True)
     parser.add_argument("--no_save_predictions", dest="save_predictions", action="store_false")
+    parser.add_argument("--save_model", action="store_true", default=True)
+    parser.add_argument("--no_save_model", dest="save_model", action="store_false")
     return parser.parse_args()
 
 
@@ -473,7 +477,9 @@ class WeightedMultilabelTrainer(Trainer):
 def build_training_args(args: argparse.Namespace, use_cuda: bool) -> TrainingArguments:
     use_fp16 = args.mixed_precision == "fp16" and use_cuda
     use_bf16 = args.mixed_precision == "bf16" and use_cuda and torch.cuda.is_bf16_supported()
-    strategy = "steps" if args.max_steps > 0 else "epoch"
+    eval_strategy = "steps" if args.max_steps > 0 else "epoch"
+    save_strategy = eval_strategy if args.checkpoint_strategy == "auto" else args.checkpoint_strategy
+    load_best_model_at_end = save_strategy != "no" and save_strategy == eval_strategy
 
     kwargs: dict[str, Any] = {
         "output_dir": str(Path(args.output_dir) / "checkpoints"),
@@ -487,9 +493,9 @@ def build_training_args(args: argparse.Namespace, use_cuda: bool) -> TrainingArg
         "warmup_ratio": args.warmup_ratio,
         "logging_steps": args.logging_steps,
         "logging_nan_inf_filter": False,
-        "save_strategy": strategy,
-        "save_total_limit": 2,
-        "load_best_model_at_end": True,
+        "save_strategy": save_strategy,
+        "save_total_limit": args.save_total_limit,
+        "load_best_model_at_end": load_best_model_at_end,
         "metric_for_best_model": "macro_f1",
         "greater_is_better": True,
         "fp16": use_fp16,
@@ -503,15 +509,16 @@ def build_training_args(args: argparse.Namespace, use_cuda: bool) -> TrainingArg
         "do_train": True,
         "do_eval": True,
     }
-    if strategy == "steps":
+    if eval_strategy == "steps":
         kwargs["eval_steps"] = args.eval_steps
+    if save_strategy == "steps":
         kwargs["save_steps"] = args.eval_steps
 
     signature = inspect.signature(TrainingArguments.__init__)
     if "eval_strategy" in signature.parameters:
-        kwargs["eval_strategy"] = strategy
+        kwargs["eval_strategy"] = eval_strategy
     else:
-        kwargs["evaluation_strategy"] = strategy
+        kwargs["evaluation_strategy"] = eval_strategy
 
     return TrainingArguments(**kwargs)
 
@@ -678,8 +685,9 @@ def main() -> None:
 
     trainer.train(resume_from_checkpoint=args.resume_from_checkpoint)
     model_dir = output_dir / "model"
-    trainer.save_model(str(model_dir))
-    tokenizer.save_pretrained(str(model_dir))
+    if args.save_model:
+        trainer.save_model(str(model_dir))
+        tokenizer.save_pretrained(str(model_dir))
 
     grid = threshold_grid(args.threshold_start, args.threshold_stop, args.threshold_step)
     val_prediction = trainer.predict(tokenized["validation"])
@@ -784,6 +792,9 @@ def main() -> None:
             "eval_batch_size": args.eval_batch_size,
             "gradient_accumulation_steps": args.gradient_accumulation_steps,
             "gradient_checkpointing": args.gradient_checkpointing,
+            "checkpoint_strategy": args.checkpoint_strategy,
+            "save_total_limit": args.save_total_limit,
+            "save_model": args.save_model,
             "mixed_precision": args.mixed_precision,
             "max_length": args.max_length,
             "seed": args.seed,
