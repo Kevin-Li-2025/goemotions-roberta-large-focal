@@ -199,12 +199,15 @@ or Kaggle artifacts for the released weights and metrics bundle.
 
 ## Kaggle Notebook
 
-The example notebook in `examples/kaggle_inference_demo.ipynb` loads the public
-Hugging Face checkpoint, reads `thresholds.json` and `labels.json`, and returns
-both thresholded labels and the top probability scores for sample texts. Its
-Kaggle metadata uses the accepted search tags `roberta`, `nlp`, and
-`transformers`; the title and notebook copy carry the GoEmotions,
-multi-label classification, and focal-loss terms.
+The example notebook in `examples/kaggle_inference_demo.ipynb` attaches the
+released Kaggle model source
+`kevin250304/goemotions-roberta-large-focal-sota/Transformers/roberta-large-focal-seed42/1`,
+loads the local Kaggle artifact when available, falls back to Hugging Face
+outside Kaggle, reads `thresholds.json` and `labels.json`, and returns both
+thresholded labels and the top probability scores for sample texts. Its Kaggle
+metadata uses the accepted search tags `roberta`, `nlp`, and `transformers`;
+the title and notebook copy carry the GoEmotions, multi-label classification,
+and focal-loss terms.
 
 ## CI/CD
 
