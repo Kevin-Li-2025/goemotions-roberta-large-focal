@@ -49,7 +49,7 @@ The selected policy is based on validation macro-F1, not test-set tuning.
 
 - Hugging Face: https://huggingface.co/AliceYin/goemotions-roberta-large-focal-sota
 - Kaggle Models: https://www.kaggle.com/models/kevin250304/goemotions-roberta-large-focal-sota/Transformers/roberta-large-focal-seed42
-- Kaggle inference notebook: https://www.kaggle.com/code/likevin2005/goemotions-roberta-large-focal-inference
+- Kaggle inference notebook: https://www.kaggle.com/code/kevin250304/goemotions-roberta-large-focal-model-demo
 - Training source: [`emotion-model/train_goemotions.py`](emotion-model/train_goemotions.py)
 
 ## Repository Scope

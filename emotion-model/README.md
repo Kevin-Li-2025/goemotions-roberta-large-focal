@@ -9,7 +9,7 @@ Public artifacts:
 
 - Hugging Face model: https://huggingface.co/AliceYin/goemotions-roberta-large-focal-sota
 - Kaggle model artifact: https://www.kaggle.com/models/kevin250304/goemotions-roberta-large-focal-sota/Transformers/roberta-large-focal-seed42
-- Kaggle inference notebook: https://www.kaggle.com/code/likevin2005/goemotions-roberta-large-focal-inference
+- Kaggle inference notebook: https://www.kaggle.com/code/kevin250304/goemotions-roberta-large-focal-model-demo
 
 ## Status
 

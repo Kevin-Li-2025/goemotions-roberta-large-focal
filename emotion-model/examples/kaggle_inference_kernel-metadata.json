@@ -1,6 +1,6 @@
 {
-  "id": "likevin2005/goemotions-roberta-large-focal-inference",
-  "title": "GoEmotions RoBERTa Large Focal Inference",
+  "id": "kevin250304/goemotions-roberta-large-focal-model-demo",
+  "title": "GoEmotions RoBERTa Large Focal Model Demo",
   "code_file": "kaggle_inference_demo.ipynb",
   "language": "python",
   "kernel_type": "notebook",

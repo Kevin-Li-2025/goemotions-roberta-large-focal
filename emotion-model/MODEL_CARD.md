@@ -57,7 +57,7 @@ GoEmotions leaderboard comparison here.
 ## Links
 
 - Kaggle model artifact: https://www.kaggle.com/models/kevin250304/goemotions-roberta-large-focal-sota/Transformers/roberta-large-focal-seed42
-- Kaggle inference notebook: https://www.kaggle.com/code/likevin2005/goemotions-roberta-large-focal-inference
+- Kaggle inference notebook: https://www.kaggle.com/code/kevin250304/goemotions-roberta-large-focal-model-demo
 - Training source: `emotion-model/train_goemotions.py` in the release repository
 - Dataset: https://huggingface.co/datasets/google-research-datasets/go_emotions
 - GoEmotions paper: https://aclanthology.org/2020.acl-main.372/
