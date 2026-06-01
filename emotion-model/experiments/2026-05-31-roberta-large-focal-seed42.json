@@ -58,7 +58,7 @@
   "validation_threshold_candidates": {
     "fixed_0_5_macro_f1": 0.5146504031880217,
     "fixed_0_5_micro_f1": 0.6021247317623939,
-    "fixed_0_5_samples_f1": 0.6085742719886999,
+    "fixed_0_5_samples_f1": 0.6085742719887,
     "global_macro_f1": 0.538267346575113,
     "global_micro_f1": 0.5676317954869918,
     "global_samples_f1": 0.5782497329087053,
@@ -72,13 +72,17 @@
   "robustness_followup": {
     "seed_sweep_kernel": "likevin2005/goemotions-roberta-large-focal-seed-sweep",
     "seed_sweep_kernel_url": "https://www.kaggle.com/code/likevin2005/goemotions-roberta-large-focal-seed-sweep",
-    "seed_sweep_kernel_version": 2,
+    "seed_sweep_kernel_version": 3,
     "seed_sweep_seeds": [
       43,
       44
     ],
     "bootstrap_samples_per_seed": 1000,
-    "status": "running"
+    "status": "complete",
+    "summary_file": "2026-06-01-roberta-large-focal-seed-sweep.json",
+    "test_macro_f1_mean": 0.5372541665329942,
+    "test_macro_f1_min": 0.5365059208263532,
+    "test_macro_f1_max": 0.5380024122396352
   },
   "public_reference_points": [
     {
@@ -98,5 +102,5 @@
     }
   ],
   "interpretation": "This is a competitive public-reference GoEmotions result, not a formal leaderboard SOTA claim. The strict validation-selected coordinate threshold policy beats the strongest found public model card by about 0.014 test macro-F1, and the per-label threshold candidate reaches about 0.535 test macro-F1.",
-  "next_experiment": "Run the same RoBERTa-large focal configuration with seed 43 to check variance and create a candidate for seed ensembling."
+  "next_experiment": "Train or publish the best repeat seed as a separate model artifact, then evaluate lightweight seed ensembling if compute is available."
 }

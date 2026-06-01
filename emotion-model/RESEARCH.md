@@ -1,6 +1,6 @@
 # GoEmotions Public-Reference Research Notes
 
-Last updated: 2026-05-31
+Last updated: 2026-06-01
 
 ## Dataset And Metric Target
 
@@ -80,6 +80,14 @@ the hard part of this benchmark. Track `micro_f1`, `samples_f1`,
   0.565864 and test macro-F1 0.533020. This exceeds the strongest public
   model-card reference found during this iteration, which reports test macro-F1
   0.519 for a RoBERTa-large focal/per-label-threshold model.
+- 2026-06-01 RoBERTa-large focal seed sweep: seeds 43 and 44 completed as a
+  metrics-only Kaggle run with checkpoint/model saving disabled. Both repeat
+  seeds selected coordinate thresholds by validation macro-F1 and exceeded the
+  seed-42 point estimate: seed 43 reached test macro-F1 0.536506 and seed 44
+  reached test macro-F1 0.538002. The two-seed mean test macro-F1 is 0.537254.
+  Test macro-F1 bootstrap intervals were [0.513942, 0.556526] for seed 43 and
+  [0.516281, 0.557067] for seed 44, so the project should keep the
+  conservative "competitive public-reference" wording rather than formal SOTA.
 
 ## Commit And Data Policy
 

@@ -54,6 +54,12 @@ strongest public model card found during this iteration reported test macro-F1
 0.519. This is not presented as formal SOTA because there is no official
 GoEmotions leaderboard comparison here.
 
+A follow-up metrics-only seed sweep reran the same recipe with seeds 43 and 44.
+Both repeat seeds exceeded the released seed-42 point estimate, reaching test
+macro-F1 0.5365 and 0.5380 respectively. Their bootstrap intervals still overlap
+the tracked public reference, so the public claim remains intentionally
+conservative.
+
 ## Links
 
 - Kaggle model artifact: https://www.kaggle.com/models/kevin250304/goemotions-roberta-large-focal-sota/Transformers/roberta-large-focal-seed42
@@ -98,6 +104,14 @@ avoid test-set overfitting. The per-label threshold candidate reached the
 highest test macro-F1, but it was not selected by validation macro-F1 and is
 therefore not the headline policy. The exported `thresholds.json` stores all
 threshold policies plus `selected: "coordinate"`.
+
+Additional repeat-seed robustness check:
+
+| Seed | Validation macro-F1 | Test macro-F1 | Test micro-F1 | Test samples-F1 | Test macro-F1 95% CI |
+| ---: | ---: | ---: | ---: | ---: | --- |
+| 43 | 0.5588 | 0.5365 | 0.5909 | 0.5974 | [0.5139, 0.5565] |
+| 44 | 0.5679 | 0.5380 | 0.5938 | 0.5997 | [0.5163, 0.5571] |
+| Mean | 0.5633 | 0.5373 | 0.5923 | 0.5986 | - |
 
 ## Intended Use
 

@@ -16,7 +16,9 @@ Public artifacts:
 The current release is a completed seed-42 RoBERTa-large focal-loss run on
 `google-research-datasets/go_emotions`, simplified configuration. The
 validation-selected threshold policy is the reported policy for the headline
-test metrics.
+test metrics. A follow-up metrics-only seed sweep for seeds 43 and 44 completed
+on Kaggle and both repeat seeds exceeded the seed-42 test macro-F1 point
+estimate.
 
 This repository tracks source code, configuration, metrics summaries, research
 notes, and release documentation. It does not track raw datasets, Kaggle
@@ -55,6 +57,25 @@ The headline result uses the validation-selected coordinate threshold policy to
 avoid test-set overfitting. The per-label threshold candidate reached the
 highest test macro-F1, but it was not selected by validation macro-F1 and is
 therefore not the headline policy.
+
+### Seed Sweep Robustness
+
+The same recipe was rerun on Kaggle as a metrics-only sweep with checkpoint and
+model saving disabled. Each run used coordinate thresholds selected by
+validation macro-F1 and 1,000 bootstrap samples for validation/test confidence
+intervals.
+
+| Seed | Validation Macro-F1 | Validation Micro-F1 | Validation Samples-F1 | Test Macro-F1 | Test Micro-F1 | Test Samples-F1 | Test Macro-F1 95% CI |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| 43 | 0.5588 | 0.6007 | 0.6076 | 0.5365 | 0.5909 | 0.5974 | [0.5139, 0.5565] |
+| 44 | 0.5679 | 0.6081 | 0.6145 | 0.5380 | 0.5938 | 0.5997 | [0.5163, 0.5571] |
+| Mean | 0.5633 | 0.6044 | 0.6111 | 0.5373 | 0.5923 | 0.5986 | - |
+
+The seed sweep improves confidence that the training recipe is strong: both
+repeat seeds exceed the released seed-42 test macro-F1 0.5330 and the tracked
+public model-card reference point 0.519. The bootstrap intervals still overlap
+that public reference, so the project keeps the narrower claim of a competitive
+public-reference result rather than formal SOTA.
 
 ## Quick Inference
 
@@ -243,6 +264,7 @@ emotion-model/
   PROMOTION.md                                # launch copy and public links
   RESEARCH.md                                 # references, run history, next experiments
   experiments/
+    2026-06-01-roberta-large-focal-seed-sweep.json
     2026-05-31-roberta-large-focal-seed42.json
     2026-05-31-weighted-bce-baseline.json
     2026-05-31-asymmetric-large-failed.json
@@ -260,7 +282,8 @@ emotion-model/
 - Effective batch size: `2 x 16` gradient accumulation
 - Mixed precision: disabled for stability on Kaggle T4
 - Threshold policy: coordinate search selected by validation macro-F1
-- Seed: `42`
+- Released artifact seed: `42`
+- Metrics-only robustness seeds: `43`, `44`
 
 ## Limitations
 

@@ -1,0 +1,247 @@
+{
+  "kaggle_kernel": "likevin2005/goemotions-roberta-large-focal-seed-sweep",
+  "kaggle_kernel_url": "https://www.kaggle.com/code/likevin2005/goemotions-roberta-large-focal-seed-sweep",
+  "kaggle_version": 3,
+  "kaggle_status": "COMPLETE",
+  "status": "completed_seed_sweep",
+  "source_run_started_utc": "2026-06-01 04:43:51.917000",
+  "model_name": "FacebookAI/roberta-large",
+  "loss_type": "focal",
+  "focal_alpha": 0.38,
+  "focal_gamma": 2.8,
+  "epochs": 4.0,
+  "learning_rate": 1e-05,
+  "train_batch_size": 2,
+  "eval_batch_size": 16,
+  "gradient_accumulation_steps": 16,
+  "mixed_precision": "none",
+  "checkpoint_strategy": "no",
+  "saved_model_weights": false,
+  "saved_predictions": false,
+  "bootstrap_samples_per_seed": 1000,
+  "seeds": [
+    43,
+    44
+  ],
+  "aggregate": {
+    "test_macro_f1_mean": 0.5372541665329942,
+    "test_macro_f1_min": 0.5365059208263532,
+    "test_macro_f1_max": 0.5380024122396352,
+    "test_micro_f1_mean": 0.5923464988016882,
+    "test_samples_f1_mean": 0.5985658129107548,
+    "delta_vs_seed42_test_macro_f1_mean": 0.00423391780414939,
+    "delta_vs_public_reference_test_macro_f1_mean": 0.018254166532994165
+  },
+  "runs": [
+    {
+      "seed": 43,
+      "status": "completed",
+      "selected_threshold_policy": "coordinate",
+      "selection_metric": "macro_f1",
+      "selected_thresholds": {
+        "admiration": 0.4300000071525574,
+        "amusement": 0.5299999713897705,
+        "anger": 0.49000000953674316,
+        "annoyance": 0.4099999964237213,
+        "approval": 0.38999998569488525,
+        "caring": 0.4300000071525574,
+        "confusion": 0.4099999964237213,
+        "curiosity": 0.4300000071525574,
+        "desire": 0.4099999964237213,
+        "disappointment": 0.3700000047683716,
+        "disapproval": 0.3700000047683716,
+        "disgust": 0.44999998807907104,
+        "embarrassment": 0.38999998569488525,
+        "excitement": 0.4300000071525574,
+        "fear": 0.44999998807907104,
+        "gratitude": 0.49000000953674316,
+        "grief": 0.33000001311302185,
+        "joy": 0.4099999964237213,
+        "love": 0.44999998807907104,
+        "nervousness": 0.44999998807907104,
+        "neutral": 0.33000001311302185,
+        "optimism": 0.4300000071525574,
+        "pride": 0.28999999165534973,
+        "realization": 0.4300000071525574,
+        "relief": 0.3499999940395355,
+        "remorse": 0.4099999964237213,
+        "sadness": 0.4099999964237213,
+        "surprise": 0.49000000953674316
+      },
+      "validation_selected": {
+        "macro_f1": 0.5587665724348011,
+        "micro_f1": 0.600697195373158,
+        "samples_f1": 0.6076036017060713,
+        "weighted_f1": 0.5999256105204259,
+        "macro_precision": 0.5730435093289206,
+        "macro_recall": 0.5611354368735527,
+        "subset_accuracy": 0.49502395871728716,
+        "hamming_loss": 0.03317360855141909,
+        "label_density": 0.041085250908324995
+      },
+      "test_selected": {
+        "macro_f1": 0.5365059208263532,
+        "micro_f1": 0.590872952774686,
+        "samples_f1": 0.597432590135741,
+        "weighted_f1": 0.5895263807368788,
+        "macro_precision": 0.5436649464776131,
+        "macro_recall": 0.5510983448139346,
+        "subset_accuracy": 0.4847982310668878,
+        "hamming_loss": 0.033865066203374664,
+        "label_density": 0.041123746347626944
+      },
+      "validation_bootstrap_ci": {
+        "macro_f1": {
+          "confidence": 0.95,
+          "lower": 0.5378545352691203,
+          "mean": 0.5573865921989364,
+          "samples": 1000,
+          "upper": 0.5753220185632376
+        },
+        "micro_f1": {
+          "confidence": 0.95,
+          "lower": 0.5893282515483563,
+          "mean": 0.6007170383272387,
+          "samples": 1000,
+          "upper": 0.6120998180550099
+        },
+        "samples_f1": {
+          "confidence": 0.95,
+          "lower": 0.5959643383708071,
+          "mean": 0.6076429694767698,
+          "samples": 1000,
+          "upper": 0.6192400566935216
+        }
+      },
+      "test_bootstrap_ci": {
+        "macro_f1": {
+          "confidence": 0.95,
+          "lower": 0.513942284118545,
+          "mean": 0.5349501650494356,
+          "samples": 1000,
+          "upper": 0.5565257937135906
+        },
+        "micro_f1": {
+          "confidence": 0.95,
+          "lower": 0.5794091161124999,
+          "mean": 0.5911062472253654,
+          "samples": 1000,
+          "upper": 0.602933645759331
+        },
+        "samples_f1": {
+          "confidence": 0.95,
+          "lower": 0.5850368527731712,
+          "mean": 0.5976338492721578,
+          "samples": 1000,
+          "upper": 0.609817425219581
+        }
+      }
+    },
+    {
+      "seed": 44,
+      "status": "completed",
+      "selected_threshold_policy": "coordinate",
+      "selection_metric": "macro_f1",
+      "selected_thresholds": {
+        "admiration": 0.44999998807907104,
+        "amusement": 0.44999998807907104,
+        "anger": 0.49000000953674316,
+        "annoyance": 0.4099999964237213,
+        "approval": 0.3700000047683716,
+        "caring": 0.4300000071525574,
+        "confusion": 0.4099999964237213,
+        "curiosity": 0.44999998807907104,
+        "desire": 0.4099999964237213,
+        "disappointment": 0.3700000047683716,
+        "disapproval": 0.4300000071525574,
+        "disgust": 0.44999998807907104,
+        "embarrassment": 0.49000000953674316,
+        "excitement": 0.4300000071525574,
+        "fear": 0.4300000071525574,
+        "gratitude": 0.5299999713897705,
+        "grief": 0.3100000023841858,
+        "joy": 0.38999998569488525,
+        "love": 0.44999998807907104,
+        "nervousness": 0.38999998569488525,
+        "neutral": 0.3499999940395355,
+        "optimism": 0.4099999964237213,
+        "pride": 0.3100000023841858,
+        "realization": 0.44999998807907104,
+        "relief": 0.3700000047683716,
+        "remorse": 0.3700000047683716,
+        "sadness": 0.4099999964237213,
+        "surprise": 0.6100000143051147
+      },
+      "validation_selected": {
+        "macro_f1": 0.5678626599891234,
+        "micro_f1": 0.608109180353884,
+        "samples_f1": 0.614539343197655,
+        "weighted_f1": 0.605511993517436,
+        "macro_precision": 0.5841289430449156,
+        "macro_recall": 0.5750469647547,
+        "subset_accuracy": 0.5064504238849982,
+        "hamming_loss": 0.032508819967352956,
+        "label_density": 0.0409601916697383
+      },
+      "test_selected": {
+        "macro_f1": 0.5380024122396352,
+        "micro_f1": 0.5938200448286903,
+        "samples_f1": 0.5996990356857687,
+        "weighted_f1": 0.5912659880738967,
+        "macro_precision": 0.5467945315162668,
+        "macro_recall": 0.5549512480962984,
+        "subset_accuracy": 0.4940114243596831,
+        "hamming_loss": 0.0333912448340309,
+        "label_density": 0.040557793045355235
+      },
+      "validation_bootstrap_ci": {
+        "macro_f1": {
+          "confidence": 0.95,
+          "lower": 0.5473973929440314,
+          "mean": 0.5664941014261274,
+          "samples": 1000,
+          "upper": 0.5847169137220076
+        },
+        "micro_f1": {
+          "confidence": 0.95,
+          "lower": 0.5975394871663423,
+          "mean": 0.6082392499822153,
+          "samples": 1000,
+          "upper": 0.6188133144643796
+        },
+        "samples_f1": {
+          "confidence": 0.95,
+          "lower": 0.6029464395415373,
+          "mean": 0.6146978349393574,
+          "samples": 1000,
+          "upper": 0.6265590060203956
+        }
+      },
+      "test_bootstrap_ci": {
+        "macro_f1": {
+          "confidence": 0.95,
+          "lower": 0.5162812142855149,
+          "mean": 0.5361648483132008,
+          "samples": 1000,
+          "upper": 0.5570671208778498
+        },
+        "micro_f1": {
+          "confidence": 0.95,
+          "lower": 0.5827757376497844,
+          "mean": 0.5939262108003345,
+          "samples": 1000,
+          "upper": 0.6058014040404263
+        },
+        "samples_f1": {
+          "confidence": 0.95,
+          "lower": 0.5878927891407162,
+          "mean": 0.5997845525459125,
+          "samples": 1000,
+          "upper": 0.6125423806891469
+        }
+      }
+    }
+  ],
+  "interpretation": "Seeds 43 and 44 both exceeded the released seed-42 test macro-F1 and the tracked public model-card reference point of 0.519. The point estimates make the recipe more robust, but the per-seed bootstrap confidence intervals still overlap the 0.519 reference, so the claim remains competitive public-reference rather than formal SOTA.",
+  "data_policy": "This file is a derived metrics summary. Raw Kaggle logs, model checkpoints, predictions, datasets, and caches are intentionally not committed."
+}

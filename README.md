@@ -13,7 +13,7 @@ focal loss with validation-tuned coordinate thresholds. The Hugging Face repo is
 the easiest inference endpoint; the Kaggle Models page is the public artifact
 mirror with weights, metrics, labels, thresholds, and run logs.
 
-## Current Result
+## Released Seed-42 Result
 
 | Split | Macro-F1 | Micro-F1 | Samples-F1 |
 | --- | ---: | ---: | ---: |
@@ -36,11 +36,27 @@ Validation threshold selection:
 
 The selected policy is based on validation macro-F1, not test-set tuning.
 
+## Seed Sweep Robustness
+
+The same RoBERTa-large focal-loss recipe was rerun as a metrics-only Kaggle
+seed sweep with seeds 43 and 44. Both repeat seeds beat the released seed-42
+test macro-F1 and the tracked public model-card reference point of 0.519.
+
+| Seed | Validation Macro-F1 | Test Macro-F1 | Test Micro-F1 | Test Samples-F1 | Test Macro-F1 95% CI |
+| ---: | ---: | ---: | ---: | ---: | --- |
+| 43 | 0.5588 | 0.5365 | 0.5909 | 0.5974 | [0.5139, 0.5565] |
+| 44 | 0.5679 | 0.5380 | 0.5938 | 0.5997 | [0.5163, 0.5571] |
+| Mean | 0.5633 | 0.5373 | 0.5923 | 0.5986 | - |
+
+This strengthens the recipe-level claim, but the public wording remains
+conservative: competitive public-reference result, not formal leaderboard SOTA.
+
 ## Start Here
 
 - [Project README](emotion-model/README.md): setup, inference, training, and reproducibility.
 - [Model card](emotion-model/MODEL_CARD.md): public Hugging Face model card source.
 - [Kaggle inference notebook](emotion-model/examples/kaggle_inference_demo.ipynb): runnable usage demo.
+- [Seed sweep record](emotion-model/experiments/2026-06-01-roberta-large-focal-seed-sweep.json): repeat-seed metrics and bootstrap CIs.
 - [Research notes](emotion-model/RESEARCH.md): reference points, failed runs, and iteration history.
 - [Promotion kit](emotion-model/PROMOTION.md): concise public launch copy and links.
 - [CI/CD](emotion-model/README.md#cicd): validation, smoke testing, and release metadata automation.
