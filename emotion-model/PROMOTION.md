@@ -92,7 +92,7 @@ next experiments for emotion classification.
 
 ## Careful Claiming
 
-Use "public-reference SOTA-level" or "strong public GoEmotions result" unless a
-formal leaderboard or paper survey confirms absolute SOTA. The defensible claim
-is that this run beats the strongest public model-card reference found during
-the experiment by about 0.014 test macro-F1.
+Use "competitive public GoEmotions result" or "strong public-reference result"
+unless a formal leaderboard or paper survey confirms absolute SOTA. The
+defensible claim is that this run beats the strongest public model-card
+reference found during the experiment by about 0.014 test macro-F1.

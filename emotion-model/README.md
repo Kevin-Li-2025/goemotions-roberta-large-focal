@@ -1,4 +1,4 @@
-# GoEmotions RoBERTa-Large Focal Classifier
+# GoEmotions RoBERTa-Large Focal Loss Classifier
 
 RoBERTa-large multi-label emotion classifier for the public GoEmotions
 benchmark. The released checkpoint predicts 27 fine-grained emotion labels plus
@@ -9,6 +9,7 @@ Public artifacts:
 
 - Hugging Face model: https://huggingface.co/AliceYin/goemotions-roberta-large-focal-sota
 - Kaggle model artifact: https://www.kaggle.com/models/kevin250304/goemotions-roberta-large-focal-sota/Transformers/roberta-large-focal-seed42
+- Kaggle inference notebook: https://www.kaggle.com/code/likevin2005/goemotions-roberta-large-focal-inference
 
 ## Status
 
@@ -50,9 +51,10 @@ Threshold comparison on the test split:
 | Per-label thresholds | 0.5350 | 0.5759 | 0.5852 |
 | Coordinate thresholds | 0.5330 | 0.5767 | 0.5859 |
 
-The per-label threshold candidate reached the highest test macro-F1, but the
-coordinate threshold policy was selected by validation macro-F1 and is the
-strict reported policy.
+The headline result uses the validation-selected coordinate threshold policy to
+avoid test-set overfitting. The per-label threshold candidate reached the
+highest test macro-F1, but it was not selected by validation macro-F1 and is
+therefore not the headline policy.
 
 ## Quick Inference
 
@@ -62,7 +64,9 @@ Install runtime dependencies:
 python -m pip install torch transformers huggingface_hub safetensors
 ```
 
-Run prediction with the released model and saved validation-selected thresholds:
+Run prediction with the released model and saved validation-selected thresholds.
+The Transformers code loads from Hugging Face (`HF_MODEL_ID`); the Kaggle URL is
+the same release mirrored as a public artifact.
 
 ```python
 import json
@@ -70,14 +74,27 @@ import torch
 from huggingface_hub import hf_hub_download
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-repo_id = "AliceYin/goemotions-roberta-large-focal-sota"
+HF_MODEL_ID = "AliceYin/goemotions-roberta-large-focal-sota"
+KAGGLE_MODEL_URL = (
+    "https://www.kaggle.com/models/kevin250304/"
+    "goemotions-roberta-large-focal-sota/Transformers/roberta-large-focal-seed42"
+)
 
-tokenizer = AutoTokenizer.from_pretrained(repo_id)
-model = AutoModelForSequenceClassification.from_pretrained(repo_id)
+tokenizer = AutoTokenizer.from_pretrained(HF_MODEL_ID)
+model = AutoModelForSequenceClassification.from_pretrained(HF_MODEL_ID)
 
-threshold_data = json.load(open(hf_hub_download(repo_id, "thresholds.json")))
-labels = json.load(open(hf_hub_download(repo_id, "labels.json")))["label_names"]
-threshold_map = threshold_data[threshold_data["selected"]]
+with open(hf_hub_download(HF_MODEL_ID, "thresholds.json"), encoding="utf-8") as f:
+    threshold_data = json.load(f)
+with open(hf_hub_download(HF_MODEL_ID, "labels.json"), encoding="utf-8") as f:
+    labels = json.load(f)["label_names"]
+
+selected_policy = threshold_data["selected"]
+selected_thresholds = threshold_data[selected_policy]
+threshold_map = (
+    selected_thresholds["per_label"]
+    if selected_policy == "global"
+    else selected_thresholds
+)
 thresholds = [threshold_map[label] for label in labels]
 
 text = "I finally got this working and I am so relieved."
@@ -180,6 +197,15 @@ A completed run writes:
 Generated outputs are intentionally ignored by Git. Use the public Hugging Face
 or Kaggle artifacts for the released weights and metrics bundle.
 
+## Kaggle Notebook
+
+The example notebook in `examples/kaggle_inference_demo.ipynb` loads the public
+Hugging Face checkpoint, reads `thresholds.json` and `labels.json`, and returns
+both thresholded labels and the top probability scores for sample texts. Its
+Kaggle metadata uses the accepted search tags `roberta`, `nlp`, and
+`transformers`; the title and notebook copy carry the GoEmotions,
+multi-label classification, and focal-loss terms.
+
 ## CI/CD
 
 GitHub Actions is configured with three workflows:
@@ -207,6 +233,7 @@ permissions only for creating or updating GitHub Releases.
 emotion-model/
   train_goemotions.py                         # training, evaluation, threshold tuning
   run_seed_sweep.py                           # sequential seed sweep runner
+  examples/kaggle_inference_demo.ipynb        # public inference notebook source
   kernel-metadata.json                        # Kaggle script-kernel config
   requirements.txt                            # runtime dependencies
   MODEL_CARD.md                               # Hugging Face model card source
@@ -238,8 +265,8 @@ emotion-model/
 - The model is best suited to English short-form text close to the dataset
   distribution.
 - It should not be used as the sole input for high-stakes decisions.
-- Public-reference SOTA-level is a defensible claim for the references tracked
-  in `RESEARCH.md`; it is not a claim of formal leaderboard dominance.
+- The current result is competitive against tracked public references, but it
+  is not presented as formal SOTA without a leaderboard or broader paper survey.
 
 ## References
 

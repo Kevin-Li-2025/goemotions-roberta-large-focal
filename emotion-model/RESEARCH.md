@@ -1,4 +1,4 @@
-# GoEmotions SOTA Research Notes
+# GoEmotions Public-Reference Research Notes
 
 Last updated: 2026-05-31
 

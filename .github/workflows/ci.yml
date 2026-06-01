@@ -80,6 +80,9 @@ jobs:
           while IFS= read -r -d '' file; do
             python -m json.tool "$file" >/dev/null
           done < <(find emotion-model -name '*.json' -print0)
+          while IFS= read -r -d '' file; do
+            python -m json.tool "$file" >/dev/null
+          done < <(find emotion-model -name '*.ipynb' -print0)
 
       - name: Compile training script
         run: python -m py_compile emotion-model/train_goemotions.py

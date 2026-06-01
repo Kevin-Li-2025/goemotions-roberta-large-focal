@@ -97,6 +97,6 @@
       "url": "https://huggingface.co/darkfordays/deberta-v3-large-go-emotions"
     }
   ],
-  "interpretation": "This is a clearly SOTA-level public-reference result. The strict validation-selected coordinate threshold policy beats the strongest found public model card by about 0.014 test macro-F1, and the per-label threshold candidate reaches about 0.535 test macro-F1.",
+  "interpretation": "This is a competitive public-reference GoEmotions result, not a formal leaderboard SOTA claim. The strict validation-selected coordinate threshold policy beats the strongest found public model card by about 0.014 test macro-F1, and the per-label threshold candidate reaches about 0.535 test macro-F1.",
   "next_experiment": "Run the same RoBERTa-large focal configuration with seed 43 to check variance and create a candidate for seed ensembling."
 }

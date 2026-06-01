@@ -1,4 +1,4 @@
-# GoEmotions RoBERTa-Large Focal Classifier
+# GoEmotions RoBERTa-Large Focal Loss Classifier
 
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-public%20model-yellow)](https://huggingface.co/AliceYin/goemotions-roberta-large-focal-sota)
 [![Kaggle](https://img.shields.io/badge/Kaggle-public%20artifact-blue)](https://www.kaggle.com/models/kevin250304/goemotions-roberta-large-focal-sota/Transformers/roberta-large-focal-seed42)
@@ -9,7 +9,9 @@
 
 RoBERTa-large multi-label classifier for Google's GoEmotions benchmark. The
 released model predicts 27 fine-grained emotion labels plus `neutral` and uses
-focal loss with validation-tuned coordinate thresholds.
+focal loss with validation-tuned coordinate thresholds. The Hugging Face repo is
+the easiest inference endpoint; the Kaggle Models page is the public artifact
+mirror with weights, metrics, labels, thresholds, and run logs.
 
 ## Current Result
 
@@ -18,9 +20,10 @@ focal loss with validation-tuned coordinate thresholds.
 | Validation | 0.5659 | 0.5966 | 0.6051 |
 | Test | 0.5330 | 0.5767 | 0.5859 |
 
-The strict validation-selected threshold policy is the headline result. A
-per-label threshold candidate reached test macro-F1 0.5350, but it was not the
-validation-selected policy.
+The headline result uses the validation-selected coordinate threshold policy to
+avoid test-set overfitting. A per-label threshold candidate reached test
+macro-F1 0.5350, but it was not selected by the validation policy and is
+therefore reported only as a candidate.
 
 Validation threshold selection:
 
@@ -37,6 +40,7 @@ The selected policy is based on validation macro-F1, not test-set tuning.
 
 - [Project README](emotion-model/README.md): setup, inference, training, and reproducibility.
 - [Model card](emotion-model/MODEL_CARD.md): public Hugging Face model card source.
+- [Kaggle inference notebook](emotion-model/examples/kaggle_inference_demo.ipynb): runnable usage demo.
 - [Research notes](emotion-model/RESEARCH.md): reference points, failed runs, and iteration history.
 - [Promotion kit](emotion-model/PROMOTION.md): concise public launch copy and links.
 - [CI/CD](emotion-model/README.md#cicd): validation, smoke testing, and release metadata automation.
@@ -45,6 +49,7 @@ The selected policy is based on validation macro-F1, not test-set tuning.
 
 - Hugging Face: https://huggingface.co/AliceYin/goemotions-roberta-large-focal-sota
 - Kaggle Models: https://www.kaggle.com/models/kevin250304/goemotions-roberta-large-focal-sota/Transformers/roberta-large-focal-seed42
+- Kaggle inference notebook: https://www.kaggle.com/code/likevin2005/goemotions-roberta-large-focal-inference
 - Training source: [`emotion-model/train_goemotions.py`](emotion-model/train_goemotions.py)
 
 ## Repository Scope
@@ -57,6 +62,5 @@ unrelated Kaggle projects.
 ## Naming
 
 The repository name uses the concrete model family and training recipe:
-`goemotions-roberta-large-focal`. The project documentation uses the narrower
-phrase "public-reference SOTA-level" only where the supporting comparison is
-explicitly documented.
+`goemotions-roberta-large-focal`. The public claim is intentionally narrow:
+competitive public-reference GoEmotions result, not formal leaderboard SOTA.
